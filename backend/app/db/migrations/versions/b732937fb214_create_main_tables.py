@@ -19,7 +19,7 @@ def create_jobs_table() -> None:
         sa.Column("id", sa.CHAR(36), primary_key=True),
         sa.Column("name", sa.Text, nullable=False, index=True),
         sa.Column("description", sa.Text, nullable=True),
-        # sa.Column("type", sa.Text, nullable=False, server_default="spot_clean"),
+        sa.Column("job_type", sa.Text, nullable=False, server_default="spot_clean"),
         sa.Column("price", sa.Numeric(10, 2), nullable=False),
     )
 
