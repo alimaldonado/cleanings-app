@@ -23,7 +23,7 @@ def run_migrations_online() -> None:
     Run migrations in 'online' mode
     """
     DB_URL = f"{DATABASE_URL}_test" if os.environ.get(
-        "TESTING") else DATABASE_URL
+        "TESTING") else str(DATABASE_URL)
 
     # testing config
     if os.environ.get("TESTING"):
