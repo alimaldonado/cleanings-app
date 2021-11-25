@@ -74,7 +74,7 @@ def create_jobs_table() -> None:
 def create_users_table() -> None:
     op.create_table(
         "users",
-        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column("id", sa.CHAR(36), primary_key=True),
         sa.Column("username", sa.Text, unique=True,
                   nullable=False, index=True),
         sa.Column("email", sa.Text, unique=True, nullable=False, index=True),

@@ -9,6 +9,8 @@ import alembic
 from alembic.config import Config
 
 from app.models.job import JobCreate, JobInDB
+from app.models.user import UserCreate, UserInDB
+from app.db.repositories.users import UsersRepository
 from app.db.repositories.jobs import JobsRepository
 
 
@@ -60,3 +62,21 @@ async def test_job(db: Database) -> JobInDB:
         job_type="spot_clean",
     )
     return await job_repo.create_job(new_job=new_job)
+
+
+@pytest.fixture
+async def test_user(db: Database) -> UserInDB:
+    new_user = UserCreate(
+        email="eddie@vedder.io",
+        username="eddiev",
+        password="evenflow"
+    )
+
+    user_repo = UsersRepository(db)
+
+    existing_user = await user_repo.get_user_by_email(email=new_user.email)
+
+    if existing_user:
+        return existing_user
+
+    return await user_repo.register_new_user(new_user=new_user)
