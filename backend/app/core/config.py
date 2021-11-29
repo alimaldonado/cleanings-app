@@ -5,7 +5,7 @@ from starlette.datastructures import Secret
 
 config = Config(".env")
 
-PROJECT_NAME = "Stitch"
+PROJECT_NAME = "Phresh"
 VERSION = "1.0.0"
 API_PREFIX = "/api"
 

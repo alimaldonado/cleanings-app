@@ -8,10 +8,10 @@ from databases import Database
 import alembic
 from alembic.config import Config
 
-from app.models.job import JobCreate, JobInDB
+from app.models.cleaning import cleaningCreate, cleaningInDB
 from app.models.user import UserCreate, UserInDB
 from app.db.repositories.users import UsersRepository
-from app.db.repositories.jobs import JobsRepository
+from app.db.repositories.cleanings import cleaningsRepository
 from app.core.config import SECRET_KEY, JWT_TOKEN_PREFIX
 from app.services import auth_service
 
@@ -55,15 +55,15 @@ async def client(app: FastAPI) -> AsyncClient:
 
 
 @pytest.fixture
-async def test_job(db: Database, test_user: UserInDB) -> JobInDB:
-    job_repo = JobsRepository(db)
-    new_job = JobCreate(
-        name="fake job name",
-        description="fake job description",
+async def test_cleaning(db: Database, test_user: UserInDB) -> cleaningInDB:
+    cleaning_repo = cleaningsRepository(db)
+    new_cleaning = cleaningCreate(
+        name="fake cleaning name",
+        description="fake cleaning description",
         price=9.99,
-        job_type="spot_clean",
+        cleaning_type="spot_clean",
     )
-    return await job_repo.create_job(new_job=new_job, requesting_user=test_user)
+    return await cleaning_repo.create_cleaning(new_cleaning=new_cleaning, requesting_user=test_user)
 
 
 @pytest.fixture

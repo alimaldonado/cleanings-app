@@ -5,37 +5,37 @@ from app.models.core import IDModelMixin, CoreModel, DateTimeModelMixin
 from app.models.user import UserPublic
 
 
-class JobType(str, Enum):
+class cleaningType(str, Enum):
     dust_up = "dust_up"
     spot_clean = "spot_clean"
     full_clean = "full_clean"
 
 
-class JobBase(CoreModel):
+class cleaningBase(CoreModel):
     """
-    All common characteristics of our Job resource
+    All common characteristics of our cleaning resource
     """
     name: Optional[str]
     description: Optional[str]
     price: Optional[float]
-    job_type: Optional[JobType] = "spot_clean"
+    cleaning_type: Optional[cleaningType] = "spot_clean"
 
 
-class JobCreate(JobBase):
+class cleaningCreate(cleaningBase):
     name: str
     price: float
 
 
-class JobUpdate(JobBase):
-    job_type: Optional[JobType]
+class cleaningUpdate(cleaningBase):
+    cleaning_type: Optional[cleaningType]
 
 
-class JobInDB(IDModelMixin, JobBase):
+class cleaningInDB(IDModelMixin, cleaningBase):
     name: str
     price: float
-    job_type: JobType
+    cleaning_type: cleaningType
     owner: str
 
 
-class JobPublic(IDModelMixin, JobBase):
+class cleaningPublic(IDModelMixin, cleaningBase):
     owner: Union[str, UserPublic]

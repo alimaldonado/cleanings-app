@@ -48,13 +48,13 @@ def timestamps(indexed: bool = False) -> Tuple[sa.Column, sa.Column]:
     )
 
 
-def create_jobs_table() -> None:
+def create_cleanings_table() -> None:
     op.create_table(
-        "jobs",
+        "cleanings",
         sa.Column("id", sa.CHAR(36), primary_key=True),
         sa.Column("name", sa.Text, nullable=False, index=True),
         sa.Column("description", sa.Text, nullable=True),
-        sa.Column("job_type", sa.Text, nullable=False,
+        sa.Column("cleaning_type", sa.Text, nullable=False,
                   server_default="spot_clean"),
         sa.Column("price", sa.Numeric(10, 2), nullable=False),
         sa.Column("owner", sa.CHAR(36), sa.ForeignKey(
@@ -64,9 +64,9 @@ def create_jobs_table() -> None:
 
     op.execute(
         """
-        CREATE TRIGGER update_jobs_modtime
+        CREATE TRIGGER update_cleanings_modtime
             BEFORE UPDATE
-            ON jobs
+            ON cleanings
             FOR EACH ROW
         EXECUTE PROCEDURE update_updated_at_column();
         """
@@ -128,11 +128,11 @@ def upgrade() -> None:
     create_updated_at_trigger()
     create_users_table()
     create_profiles_table()
-    create_jobs_table()
+    create_cleanings_table()
 
 
 def downgrade() -> None:
-    op.drop_table("jobs")
+    op.drop_table("cleanings")
     op.drop_table("profiles")
     op.drop_table("users")
     op.execute("DROP FUNCTION update_updated_at_column")
