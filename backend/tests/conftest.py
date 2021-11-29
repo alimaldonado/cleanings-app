@@ -1,3 +1,4 @@
+from typing import Callable, List
 import warnings
 import os
 import pytest
@@ -55,7 +56,7 @@ async def client(app: FastAPI) -> AsyncClient:
 
 
 @pytest.fixture
-async def test_cleaning(db: Database, test_user: UserInDB) -> CleaningInDB:
+async def test_cleaning(db: Database, user_elliot: UserInDB) -> CleaningInDB:
     cleaning_repo = cleaningsRepository(db)
     new_cleaning = CleaningCreate(
         name="fake cleaning name",
@@ -63,17 +64,10 @@ async def test_cleaning(db: Database, test_user: UserInDB) -> CleaningInDB:
         price=9.99,
         cleaning_type="spot_clean",
     )
-    return await cleaning_repo.create_cleaning(new_cleaning=new_cleaning, requesting_user=test_user)
+    return await cleaning_repo.create_cleaning(new_cleaning=new_cleaning, requesting_user=user_elliot)
 
 
-@pytest.fixture
-async def test_user(db: Database) -> UserInDB:
-    new_user = UserCreate(
-        email="eddie@vedder.io",
-        username="eddiev",
-        password="evenflow"
-    )
-
+async def user_fixture_helper(*, db: Database, new_user: UserCreate) -> UserInDB:
     user_repo = UsersRepository(db)
 
     existing_user = await user_repo.get_user_by_email(email=new_user.email)
@@ -85,9 +79,9 @@ async def test_user(db: Database) -> UserInDB:
 
 
 @pytest.fixture
-def authorized_client(client: AsyncClient, test_user: UserInDB) -> AsyncClient:
+def elliots_authorized_client(client: AsyncClient, user_elliot: UserInDB) -> AsyncClient:
     access_token = auth_service.create_access_token_for_user(
-        user=test_user, secret_key=str(SECRET_KEY))
+        user=user_elliot, secret_key=str(SECRET_KEY))
 
     client.headers = {
         **client.headers,
@@ -98,18 +92,89 @@ def authorized_client(client: AsyncClient, test_user: UserInDB) -> AsyncClient:
 
 
 @pytest.fixture
-async def test_user2(db: Database) -> UserInDB:
+async def user_elliot(db: Database) -> UserInDB:
     new_user = UserCreate(
-        email="test_user2@sample.com",
-        username="testuser2",
-        password="password1234"
+        email="elliot@sample.io",
+        username="elliot",
+        password="evenflow"
     )
 
-    user_repo = UsersRepository(db)
+    return await user_fixture_helper(db=db, new_user=new_user)
 
-    existing_user = await user_repo.get_user_by_email(email=new_user.email)
 
-    if existing_user:
-        return existing_user
+@pytest.fixture
+async def user_darlene(db: Database) -> UserInDB:
+    new_user = UserCreate(
+        email="darlene@sample.com",
+        username="darlene",
+        password="ones-and-zer0es.mpeg"
+    )
 
-    return await user_repo.register_new_user(new_user=new_user)
+    return await user_fixture_helper(db=db, new_user=new_user)
+
+
+@pytest.fixture
+async def user_mr_robot(db: Database) -> UserInDB:
+    new_user = UserCreate(
+        email="mr@robot.com",
+        username="mrRobot",
+        password="d3bug.mkv"
+    )
+
+    return await user_fixture_helper(db=db, new_user=new_user)
+
+
+@pytest.fixture
+async def user_tyrell(db: Database) -> UserInDB:
+    new_user = UserCreate(
+        email="tyrell@wellick.com",
+        username="tyrell",
+        password="bonsoir_elliot"
+    )
+
+    return await user_fixture_helper(db=db, new_user=new_user)
+
+
+@pytest.fixture
+async def user_angela(db: Database) -> UserInDB:
+    new_user = UserCreate(
+        email="angela@sample.com",
+        username="angela",
+        password="everybodywantstoruletheworld"
+    )
+
+    return await user_fixture_helper(db=db, new_user=new_user)
+
+
+@pytest.fixture
+async def user_trenton(db: Database) -> UserInDB:
+    new_user = UserCreate(
+        email="trenton@sample.com",
+        username="trenton",
+        password="3xpl0its.wmv"
+    )
+
+    return await user_fixture_helper(db=db, new_user=new_user)
+
+
+@pytest.fixture
+async def test_user_list(
+    test_user3: UserInDB, test_user4: UserInDB, test_user5: UserInDB, test_user6: UserInDB,
+) -> List[UserInDB]:
+    return [test_user3, test_user4, test_user5, test_user6]
+
+
+@pytest.fixture
+def create_authorized_client(client: AsyncClient) -> Callable:
+    def _create_authorized_client(*, user: UserInDB) -> AsyncClient:
+        access_token = auth_service.create_access_token_for_user(
+            user=user, secret_key=str(SECRET_KEY))
+
+        client.headers = {
+            **client.headers,
+            "Authorization": f"{JWT_TOKEN_PREFIX} {access_token}"
+        }
+
+        return client
+
+    return _create_authorized_client

@@ -14,8 +14,8 @@ pytestmark = pytest.mark.asyncio
 
 
 class TestProfileRoutes:
-    async def test_routes_exist(self, app: FastAPI, client: AsyncClient, test_user: UserInDB) -> None:
-        response = await client.get(app.url_path_for("profiles:get-profile-by-username", username=test_user.username))
+    async def test_routes_exist(self, app: FastAPI, client: AsyncClient, user_elliot: UserInDB) -> None:
+        response = await client.get(app.url_path_for("profiles:get-profile-by-username", username=user_elliot.username))
         assert response.status_code != status.HTTP_404_NOT_FOUND
 
         response = await client.put(app.url_path_for("profiles:update-own-profile"), json={})
@@ -39,30 +39,30 @@ class TestProfileCreate:
 
 class TestProfileView:
     async def test_authenticated_user_can_view_other_users_profile(
-        self, app: FastAPI, authorized_client: AsyncClient, test_user: UserInDB, test_user2: UserInDB
+        self, app: FastAPI, elliots_authorized_client: AsyncClient, user_elliot: UserInDB, user_darlene: UserInDB
     ) -> None:
-        response = await authorized_client.get(
+        response = await elliots_authorized_client.get(
             app.url_path_for("profiles:get-profile-by-username",
-                             username=test_user2.username)
+                             username=user_darlene.username)
         )
         assert response.status_code == HTTP_200_OK
         profile = ProfilePublic(**response.json())
-        assert profile.username == test_user2.username
+        assert profile.username == user_darlene.username
 
     async def test_unregistered_users_cannot_access_other_users_profile(
-        self, app: FastAPI, client: AsyncClient, test_user2: UserInDB
+        self, app: FastAPI, client: AsyncClient, user_darlene: UserInDB
     ) -> None:
         response = await client.get(
             app.url_path_for("profiles:get-profile-by-username",
-                             username=test_user2.username)
+                             username=user_darlene.username)
         )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     async def test_no_profile_is_returned_when_username_matches_no_user(
-        self, app: FastAPI, authorized_client: AsyncClient
+        self, app: FastAPI, elliots_authorized_client: AsyncClient
     ) -> None:
-        response = await authorized_client.get(
+        response = await elliots_authorized_client.get(
             app.url_path_for("profiles:get-profile-by-username",
                              username="username_doesnt_match")
         )
@@ -81,11 +81,11 @@ class TestProfileManagement:
         )
     )
     async def test_user_can_update_own_profile(
-        self, app: FastAPI, authorized_client: AsyncClient, test_user: UserInDB, attr: str, value: str
+        self, app: FastAPI, elliots_authorized_client: AsyncClient, user_elliot: UserInDB, attr: str, value: str
     ) -> None:
-        assert getattr(test_user.profile, attr) != value
+        assert getattr(user_elliot.profile, attr) != value
 
-        response = await authorized_client.put(
+        response = await elliots_authorized_client.put(
             app.url_path_for("profiles:update-own-profile"),
             json={attr: value},
         )
@@ -108,13 +108,13 @@ class TestProfileManagement:
     async def test_user_receives_error_for_invalid_update_params(
         self,
         app: FastAPI,
-        authorized_client: AsyncClient,
-        test_user: UserInDB,
+        elliots_authorized_client: AsyncClient,
+        user_elliot: UserInDB,
         attr: str,
         value: str,
         status_code: int,
     ) -> None:
-        response = await authorized_client.put(
+        response = await elliots_authorized_client.put(
             app.url_path_for("profiles:update-own-profile"),
             json={attr: value}
         )

@@ -120,10 +120,10 @@ class TestUsersRegistration:
 
 class TestAuthTokens:
     async def test_can_create_access_token_succesfully(
-        self, app: FastAPI, client: AsyncClient, test_user: UserInDB
+        self, app: FastAPI, client: AsyncClient, user_elliot: UserInDB
     ) -> None:
         access_token = auth_service.create_access_token_for_user(
-            user=test_user,
+            user=user_elliot,
             secret_key=str(SECRET_KEY),
             audience=JWT_AUDIENCE,
             expires_in=ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -133,7 +133,7 @@ class TestAuthTokens:
                            audience=JWT_AUDIENCE, algorithms=[JWT_ALGORITHM])
 
         assert creds.get("username") is not None
-        assert creds.get("username") == test_user.username
+        assert creds.get("username") == user_elliot.username
         assert creds["aud"] == JWT_AUDIENCE
 
     async def test_token_missing_user_is_invalid(self, app: FastAPI, client: AsyncClient) -> None:
@@ -161,7 +161,7 @@ class TestAuthTokens:
         self,
         app: FastAPI,
         client: AsyncClient,
-        test_user: UserInDB,
+        user_elliot: UserInDB,
         secret_key: Union[str, Secret],
         jwt_audience: str,
         exception: Type[BaseException],
@@ -169,7 +169,7 @@ class TestAuthTokens:
     ) -> None:
         with pytest.raises(exception):
             access_token = auth_service.create_access_token_for_user(
-                user=test_user,
+                user=user_elliot,
                 secret_key=str(secret_key),
                 audience=jwt_audience,
                 expires_in=ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -179,15 +179,15 @@ class TestAuthTokens:
                        audience=JWT_AUDIENCE, algorithms=[JWT_ALGORITHM])
 
     async def test_can_retrieve_username_from_token(
-        self, app: FastAPI, client: AsyncClient, test_user: UserInDB
+        self, app: FastAPI, client: AsyncClient, user_elliot: UserInDB
     ) -> None:
         token = auth_service.create_access_token_for_user(
-            user=test_user, secret_key=str(SECRET_KEY))
+            user=user_elliot, secret_key=str(SECRET_KEY))
 
         username = auth_service.get_username_from_token(
             token=token, secret_key=str(SECRET_KEY))
 
-        assert username == test_user.username
+        assert username == user_elliot.username
 
     @pytest.mark.parametrize(
         "secret, wrong_token",
@@ -202,12 +202,12 @@ class TestAuthTokens:
         self,
         app: FastAPI,
         client: AsyncClient,
-        test_user: UserInDB,
+        user_elliot: UserInDB,
         secret: Union[Secret, str],
         wrong_token: Optional[str]
     ) -> None:
         token = auth_service.create_access_token_for_user(
-            user=test_user, secret_key=str(SECRET_KEY))
+            user=user_elliot, secret_key=str(SECRET_KEY))
 
         if wrong_token == "use correct token":
             wrong_token = token
@@ -219,12 +219,12 @@ class TestAuthTokens:
 
 class TestUserLogin:
     async def test_user_can_login_successfully_and_receives_valid_token(
-        self, app: FastAPI, client: AsyncClient, test_user: UserInDB
+        self, app: FastAPI, client: AsyncClient, user_elliot: UserInDB
     ) -> None:
         client.headers["content-type"] = "application/x-www-form-urlencoded"
 
         login_data = {
-            "username": test_user.email,
+            "username": user_elliot.email,
             "password": "evenflow",
         }
 
@@ -238,10 +238,10 @@ class TestUserLogin:
                            audience=JWT_AUDIENCE, algorithms=[JWT_ALGORITHM])
 
         assert "username" in creds
-        assert creds["username"] == test_user.username
+        assert creds["username"] == user_elliot.username
 
         assert "sub" in creds
-        assert creds["sub"] == test_user.email
+        assert creds["sub"] == user_elliot.email
 
         assert "token_type" in response.json()
         assert response.json().get("token_type") == "bearer"
@@ -257,10 +257,10 @@ class TestUserLogin:
         ),
     )
     async def test_user_with_wrong_creds_doesnt_receive_token(
-        self, app: FastAPI, client: AsyncClient, test_user: UserInDB, credential: str, wrong_value: str, status_code: int,
+        self, app: FastAPI, client: AsyncClient, user_elliot: UserInDB, credential: str, wrong_value: str, status_code: int,
     ) -> None:
         client.headers["content-type"] = "application/x-www-form-urlencoded"
-        user_data = test_user.dict()
+        user_data = user_elliot.dict()
         user_data["password"] = "password123"
         user_data[credential] = wrong_value
         login_data = {
@@ -276,20 +276,20 @@ class TestUserLogin:
 
 class TestUserMe:
     async def test_authenticated_user_can_retrieve_own_data(
-        self, app: FastAPI, authorized_client: AsyncClient, test_user: UserInDB,
+        self, app: FastAPI, elliots_authorized_client: AsyncClient, user_elliot: UserInDB,
     ) -> None:
-        response = await authorized_client.get(app.url_path_for("users:get-current-user"))
+        response = await elliots_authorized_client.get(app.url_path_for("users:get-current-user"))
 
         assert response.status_code == HTTP_200_OK
 
         user = UserPublic(**response.json())
 
-        assert user.email == test_user.email
-        assert user.username == test_user.username
-        assert user.id == test_user.id
+        assert user.email == user_elliot.email
+        assert user.username == user_elliot.username
+        assert user.id == user_elliot.id
 
     async def test_user_cannot_access_own_data_if_not_authenticated(
-        self, app: FastAPI, client: AsyncClient, test_user: UserInDB
+        self, app: FastAPI, client: AsyncClient, user_elliot: UserInDB
     ) -> None:
         response = await client.get(app.url_path_for("users:get-current-user"))
 
@@ -297,10 +297,10 @@ class TestUserMe:
 
     @pytest.mark.parametrize("jwt_prefix", (("",), ("value",), ("Token",), ("JWT",), ("Swearer",),))
     async def test_user_cannot_access_own_data_with_incorrect_jwt_prefix(
-        self, app: FastAPI, client: AsyncClient, test_user: UserInDB, jwt_prefix: str,
+        self, app: FastAPI, client: AsyncClient, user_elliot: UserInDB, jwt_prefix: str,
     ) -> None:
         token = auth_service.create_access_token_for_user(
-            user=test_user, secret_key=str(SECRET_KEY))
+            user=user_elliot, secret_key=str(SECRET_KEY))
 
         response = await client.get(
             app.url_path_for("users:get-current-user"),
