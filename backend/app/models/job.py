@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import Optional, Union
 from enum import Enum
 
-from app.models.core import IDModelMixin, CoreModel
+from app.models.core import IDModelMixin, CoreModel, DateTimeModelMixin
+from app.models.user import UserPublic
 
 
 class JobType(str, Enum):
@@ -33,8 +34,8 @@ class JobInDB(IDModelMixin, JobBase):
     name: str
     price: float
     job_type: JobType
+    owner: str
 
 
 class JobPublic(IDModelMixin, JobBase):
-    pass
-
+    owner: Union[str, UserPublic]

@@ -56,13 +56,13 @@ class TestUsersRegistration:
         response = await client.post(app.url_path_for("users:register-new-user"), json=new_user)
         assert response.status_code == HTTP_201_CREATED
         # ensure that the user now exists in the db
-        user_in_db = await user_repo.get_user_by_email(email=new_user["email"])
+        user_in_db = await user_repo.get_user_by_email(email=new_user["email"], populate=False)
         assert user_in_db is not None
         assert user_in_db.email == new_user["email"]
         assert user_in_db.username == new_user["username"]
 
         created_user = UserPublic(
-            **response.json()).dict(exclude={"access_token"})
+            **response.json()).dict(exclude={"access_token", "profile"})
         assert created_user == user_in_db.dict(exclude={"password", "salt"})
 
     @pytest.mark.parametrize(
@@ -106,7 +106,7 @@ class TestUsersRegistration:
 
         assert response.status_code == HTTP_201_CREATED
 
-        user_in_db = await user_repo.get_user_by_email(email=new_user["email"])
+        user_in_db = await user_repo.get_user_by_email(email=new_user["email"], populate=False)
 
         assert user_in_db is not None
         assert user_in_db.salt is not None and user_in_db.salt != "123"

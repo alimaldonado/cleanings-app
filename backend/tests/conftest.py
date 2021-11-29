@@ -55,7 +55,7 @@ async def client(app: FastAPI) -> AsyncClient:
 
 
 @pytest.fixture
-async def test_job(db: Database) -> JobInDB:
+async def test_job(db: Database, test_user: UserInDB) -> JobInDB:
     job_repo = JobsRepository(db)
     new_job = JobCreate(
         name="fake job name",
@@ -63,7 +63,7 @@ async def test_job(db: Database) -> JobInDB:
         price=9.99,
         job_type="spot_clean",
     )
-    return await job_repo.create_job(new_job=new_job)
+    return await job_repo.create_job(new_job=new_job, requesting_user=test_user)
 
 
 @pytest.fixture
@@ -95,3 +95,21 @@ def authorized_client(client: AsyncClient, test_user: UserInDB) -> AsyncClient:
     }
 
     return client
+
+
+@pytest.fixture
+async def test_user2(db: Database) -> UserInDB:
+    new_user = UserCreate(
+        email="test_user2@sample.com",
+        username="testuser2",
+        password="password1234"
+    )
+
+    user_repo = UsersRepository(db)
+
+    existing_user = await user_repo.get_user_by_email(email=new_user.email)
+
+    if existing_user:
+        return existing_user
+
+    return await user_repo.register_new_user(new_user=new_user)

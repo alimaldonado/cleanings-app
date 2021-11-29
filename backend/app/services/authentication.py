@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Type
 from _pytest.python_api import raises
 import bcrypt
 from fastapi.exceptions import HTTPException
@@ -11,7 +11,7 @@ from passlib.context import CryptContext
 
 from app.core.config import SECRET_KEY, JWT_ALGORITHM, JWT_AUDIENCE, JWT_TOKEN_PREFIX, ACCESS_TOKEN_EXPIRE_MINUTES
 from app.models.token import JWTMeta, JWTCreds, JWTPayload
-from app.models.user import UserPasswordUpdate, UserInDB
+from app.models.user import UserPasswordUpdate, UserInDB, UserBase
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -44,12 +44,12 @@ class AuthService:
     def create_access_token_for_user(
         self,
         *,
-        user: UserInDB,
+        user: Type[UserBase],
         secret_key: str = str(SECRET_KEY),
         audience: str = JWT_AUDIENCE,
         expires_in: int = ACCESS_TOKEN_EXPIRE_MINUTES
     ) -> str:
-        if not user or not isinstance(user, UserInDB):
+        if not user or not isinstance(user, UserBase):
             return None
 
         jwt_meta = JWTMeta(

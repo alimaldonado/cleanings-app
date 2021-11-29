@@ -26,7 +26,7 @@ async def register_new_user(
         token_type="bearer"
     )
 
-    return UserPublic(**created_user.dict(), access_token=access_token)
+    return created_user.copy(update={"access_token": access_token})
 
 
 @router.post("/login/token", response_model=AccessToken, name="users:login-email-and-password")
@@ -50,6 +50,7 @@ async def user_login_with_email_and_password(
     )
 
     return access_token
+
 
 @router.get("/me/", response_model=UserPublic, name="users:get-current-user")
 async def get_currently_authenticated_user(current_user: UserInDB = Depends(get_current_active_user)) -> UserPublic:
