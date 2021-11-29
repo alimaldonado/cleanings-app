@@ -7,7 +7,7 @@ from fastapi import FastAPI, status
 from databases import Database
 from sqlalchemy.sql.visitors import traverse
 from app.db.repositories.cleanings import cleaningsRepository
-from app.models.cleaning import cleaningCreate, cleaningInDB, cleaningPublic
+from app.models.cleaning import CleaningCreate, CleaningInDB, CleaningPublic
 from app.models.user import UserInDB
 
 pytestmark = pytest.mark.asyncio
@@ -17,7 +17,7 @@ FAKE_ID = str(uuid.uuid4())
 
 @pytest.fixture
 def new_cleaning():
-    return cleaningCreate(
+    return CleaningCreate(
         name="test cleaning",
         description="test description",
         price=0.00,
@@ -26,12 +26,12 @@ def new_cleaning():
 
 
 @pytest.fixture
-async def test_cleanings_list(db: Database, test_user2: UserInDB) -> List[cleaningInDB]:
+async def test_cleanings_list(db: Database, test_user2: UserInDB) -> List[CleaningInDB]:
     cleaning_repo = cleaningsRepository(db)
 
     return [
         await cleaning_repo.create_cleaning(
-            new_cleaning=cleaningCreate(
+            new_cleaning=CleaningCreate(
                 name=f"test cleaning {i}", description="test description", price=20.00, cleaning_type="full_clean"
             ),
             requesting_user=test_user2
@@ -42,7 +42,7 @@ async def test_cleanings_list(db: Database, test_user2: UserInDB) -> List[cleani
 
 class TestcleaningsRoutes:
     @pytest.mark.asyncio
-    async def test_routes_exist(self, app: FastAPI, client: AsyncClient, test_cleaning: cleaningInDB) -> None:
+    async def test_routes_exist(self, app: FastAPI, client: AsyncClient, test_cleaning: CleaningInDB) -> None:
         response = await client.post(app.url_path_for("cleanings:create-cleaning"), json={})
         assert response.status_code != status.HTTP_404_NOT_FOUND
 
@@ -61,7 +61,7 @@ class TestcleaningsRoutes:
 
 class TestCreatecleaning:
     async def test_valid_input_creates_cleaning(
-        self, app: FastAPI, authorized_client: AsyncClient, new_cleaning: cleaningCreate, test_user: UserInDB
+        self, app: FastAPI, authorized_client: AsyncClient, new_cleaning: CleaningCreate, test_user: UserInDB
     ) -> None:
         response = await authorized_client.post(
             app.url_path_for("cleanings:create-cleaning"), json=new_cleaning.dict()
@@ -71,7 +71,7 @@ class TestCreatecleaning:
 
         assert response.status_code == status.HTTP_201_CREATED
 
-        created_cleaning = cleaningPublic(**response.json())
+        created_cleaning = CleaningPublic(**response.json())
 
         assert created_cleaning.name == new_cleaning.name
         assert created_cleaning.price == new_cleaning.price
@@ -79,7 +79,7 @@ class TestCreatecleaning:
         assert created_cleaning.owner == test_user.id
 
     async def test_unauthorized_user_unable_to_create_cleaning(
-        self, app: FastAPI, client: AsyncClient, new_cleaning: cleaningCreate
+        self, app: FastAPI, client: AsyncClient, new_cleaning: CleaningCreate
     ) -> None:
         response = await client.post(
             app.url_path_for("cleanings:create-cleaning"),
@@ -104,7 +104,7 @@ class TestCreatecleaning:
         app: FastAPI,
         authorized_client: AsyncClient,
         invalid_payload: Dict[str, Union[str, float]],
-        test_cleaning: cleaningCreate,
+        test_cleaning: CleaningCreate,
         status_code: int
     ) -> None:
         response = await authorized_client.post(
@@ -117,17 +117,17 @@ class TestCreatecleaning:
 
 class TestGetcleaning:
     async def test_get_cleaning_by_id(
-        self, app: FastAPI, authorized_client: AsyncClient, test_cleaning: cleaningInDB
+        self, app: FastAPI, authorized_client: AsyncClient, test_cleaning: CleaningInDB
     ) -> None:
 
         response = await authorized_client.get(app.url_path_for("cleanings:get-cleaning-by-id", id=test_cleaning.id))
         assert response.status_code == status.HTTP_200_OK
-        cleaning = cleaningInDB(**response.json())
+        cleaning = CleaningInDB(**response.json())
         
         assert cleaning == test_cleaning
 
     async def test_unauthorized_users_cant_access_cleanings(
-        self, app: FastAPI, client: AsyncClient, test_cleaning: cleaningInDB
+        self, app: FastAPI, client: AsyncClient, test_cleaning: CleaningInDB
     ) -> None:
         response = await client.get(
             app.url_path_for("cleanings:get-cleaning-by-id", id=test_cleaning.id)
@@ -150,14 +150,14 @@ class TestGetcleaning:
         assert response.status_code == status_code
 
     # async def test_get_all_cleanings_returns_valid_response(
-    #     self, app: FastAPI, client: AsyncClient, test_cleaning: cleaningInDB
+    #     self, app: FastAPI, client: AsyncClient, test_cleaning: CleaningInDB
     # ) -> None:
     #     res = await client.get(app.url_path_for("cleanings:get-all-cleanings"))
     #     print(res.json())
     #     assert res.status_code == status.HTTP_200_OK
     #     assert isinstance(res.json(), list)
     #     assert len(res.json()) > 0
-    #     cleanings = [cleaningInDB(**l) for l in res.json()]
+    #     cleanings = [CleaningInDB(**l) for l in res.json()]
     #     assert test_cleaning in cleanings
 
     async def test_get_all_cleanings_returns_only_user_owned_cleanings(
@@ -166,8 +166,8 @@ class TestGetcleaning:
         authorized_client: AsyncClient,
         test_user: UserInDB,
         db: Database,
-        test_cleaning: cleaningInDB,
-        test_cleanings_list: List[cleaningInDB]
+        test_cleaning: CleaningInDB,
+        test_cleanings_list: List[CleaningInDB]
     ) -> None:
         response = await authorized_client.get(
             app.url_path_for("cleanings:list-all-user-cleanings")
@@ -176,7 +176,7 @@ class TestGetcleaning:
         assert isinstance(response.json(), list)
         assert len(response.json()) > 0
 
-        cleanings = [cleaningInDB(**l) for l in response.json()]
+        cleanings = [CleaningInDB(**l) for l in response.json()]
 
         assert test_cleaning in cleanings
 
@@ -208,7 +208,7 @@ class TestUpdatecleaning:
         self,
         app: FastAPI,
         authorized_client: AsyncClient,
-        test_cleaning: cleaningInDB,
+        test_cleaning: CleaningInDB,
         attrs_to_change: List[str],
         values: List[str],
     ) -> None:
@@ -224,7 +224,7 @@ class TestUpdatecleaning:
         )
 
         assert res.status_code == status.HTTP_200_OK
-        updated_cleaning = cleaningInDB(**res.json())
+        updated_cleaning = CleaningInDB(**res.json())
         assert updated_cleaning.id == test_cleaning.id  # make sure it's the same cleaning
         # make sure that any attribute we updated has changed to the correct value
         for i in range(len(attrs_to_change)):
@@ -240,7 +240,7 @@ class TestUpdatecleaning:
         self,
         app: FastAPI,
         authorized_client: AsyncClient,
-        test_cleanings_list: List[cleaningInDB],
+        test_cleanings_list: List[CleaningInDB],
     ) -> None:
 
         response = await authorized_client.put(
@@ -257,7 +257,7 @@ class TestUpdatecleaning:
         self,
         app: FastAPI,
         authorized_client: AsyncClient,
-        test_cleaning: cleaningInDB,
+        test_cleaning: CleaningInDB,
         test_user: UserInDB,
         test_user2: UserInDB
     ) -> None:
@@ -272,7 +272,7 @@ class TestUpdatecleaning:
 
         assert response.status_code == status.HTTP_200_OK
 
-        cleaning = cleaningPublic(**response.json())
+        cleaning = CleaningPublic(**response.json())
 
         assert cleaning.owner == test_user.id
 
@@ -292,7 +292,7 @@ class TestUpdatecleaning:
         id: str,
         payload: dict,
         status_code: int,
-        test_cleaning: cleaningInDB
+        test_cleaning: CleaningInDB
     ) -> None:
         # cleaning_update = {payload}
         res = await authorized_client.put(
@@ -308,7 +308,7 @@ class TestDeletecleaning:
         self,
         app: FastAPI,
         authorized_client: AsyncClient,
-        test_cleaning: cleaningInDB,
+        test_cleaning: CleaningInDB,
     ) -> None:
         # delete the cleaning
         response = await authorized_client.delete(
@@ -332,7 +332,7 @@ class TestDeletecleaning:
         self,
         app: FastAPI,
         authorized_client: AsyncClient,
-        test_cleanings_list: List[cleaningInDB],
+        test_cleanings_list: List[CleaningInDB],
     ) -> None:
         # delete the cleaning
         response = await authorized_client.delete(
@@ -354,7 +354,7 @@ class TestDeletecleaning:
         self,
         app: FastAPI,
         authorized_client: AsyncClient,
-        test_cleaning: cleaningInDB,
+        test_cleaning: CleaningInDB,
         id: str,
         status_code: int,
     ) -> None:
