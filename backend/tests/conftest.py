@@ -12,7 +12,7 @@ from alembic.config import Config
 from app.models.cleaning import CleaningCreate, CleaningInDB
 from app.models.user import UserCreate, UserInDB
 from app.db.repositories.users import UsersRepository
-from app.db.repositories.cleanings import cleaningsRepository
+from app.db.repositories.cleanings import CleaningsRepository
 from app.core.config import SECRET_KEY, JWT_TOKEN_PREFIX
 from app.services import auth_service
 
@@ -57,7 +57,7 @@ async def client(app: FastAPI) -> AsyncClient:
 
 @pytest.fixture
 async def test_cleaning(db: Database, user_elliot: UserInDB) -> CleaningInDB:
-    cleaning_repo = cleaningsRepository(db)
+    cleaning_repo = CleaningsRepository(db)
     new_cleaning = CleaningCreate(
         name="fake cleaning name",
         description="fake cleaning description",

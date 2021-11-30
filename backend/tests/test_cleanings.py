@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from fastapi import FastAPI, status
 from databases import Database
 from sqlalchemy.sql.visitors import traverse
-from app.db.repositories.cleanings import cleaningsRepository
+from app.db.repositories.cleanings import CleaningsRepository
 from app.models.cleaning import CleaningCreate, CleaningInDB, CleaningPublic
 from app.models.user import UserInDB
 
@@ -27,7 +27,7 @@ def new_cleaning():
 
 @pytest.fixture
 async def darlenes_cleanings_list(db: Database, user_darlene: UserInDB) -> List[CleaningInDB]:
-    cleaning_repo = cleaningsRepository(db)
+    cleaning_repo = CleaningsRepository(db)
 
     return [
         await cleaning_repo.create_cleaning(
@@ -46,16 +46,16 @@ class TestcleaningsRoutes:
         response = await client.post(app.url_path_for("cleanings:create-cleaning"), json={})
         assert response.status_code != status.HTTP_404_NOT_FOUND
 
-        response = await client.get(app.url_path_for("cleanings:get-cleaning-by-id", id=test_cleaning.id))
+        response = await client.get(app.url_path_for("cleanings:get-cleaning-by-id", cleaning_id=test_cleaning.id))
         assert response.status_code != status.HTTP_404_NOT_FOUND
 
         response = await client.get(app.url_path_for("cleanings:list-all-user-cleanings"))
         assert response.status_code != status.HTTP_404_NOT_FOUND
 
-        response = await client.put(app.url_path_for("cleanings:update-cleaning-by-id", id=test_cleaning.id))
+        response = await client.put(app.url_path_for("cleanings:update-cleaning-by-id", cleaning_id=test_cleaning.id))
         assert response.status_code != status.HTTP_404_NOT_FOUND
 
-        response = await client.delete(app.url_path_for("cleanings:delete-cleaning-by-id", id=test_cleaning.id))
+        response = await client.delete(app.url_path_for("cleanings:delete-cleaning-by-id", cleaning_id=test_cleaning.id))
         assert response.status_code != status.HTTP_404_NOT_FOUND
 
 
@@ -120,7 +120,7 @@ class TestGetcleaning:
         self, app: FastAPI, elliots_authorized_client: AsyncClient, test_cleaning: CleaningInDB
     ) -> None:
 
-        response = await elliots_authorized_client.get(app.url_path_for("cleanings:get-cleaning-by-id", id=test_cleaning.id))
+        response = await elliots_authorized_client.get(app.url_path_for("cleanings:get-cleaning-by-id", cleaning_id=test_cleaning.id))
         assert response.status_code == status.HTTP_200_OK
         cleaning = CleaningInDB(**response.json())
         
@@ -130,7 +130,7 @@ class TestGetcleaning:
         self, app: FastAPI, client: AsyncClient, test_cleaning: CleaningInDB
     ) -> None:
         response = await client.get(
-            app.url_path_for("cleanings:get-cleaning-by-id", id=test_cleaning.id)
+            app.url_path_for("cleanings:get-cleaning-by-id", cleaning_id=test_cleaning.id)
         )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -145,7 +145,7 @@ class TestGetcleaning:
     async def test_wrong_id_returns_error(
         self, app: FastAPI, elliots_authorized_client: AsyncClient, id: str, status_code: int
     ) -> None:
-        response = await elliots_authorized_client.get(app.url_path_for("cleanings:get-cleaning-by-id", id=id))
+        response = await elliots_authorized_client.get(app.url_path_for("cleanings:get-cleaning-by-id", cleaning_id=id))
 
         assert response.status_code == status_code
 
@@ -218,7 +218,7 @@ class TestUpdatecleaning:
         res = await elliots_authorized_client.put(
             app.url_path_for(
                 "cleanings:update-cleaning-by-id",
-                id=test_cleaning.id,
+                cleaning_id=test_cleaning.id,
             ),
             json=cleaning_update
         )
@@ -247,7 +247,7 @@ class TestUpdatecleaning:
         response = await elliots_authorized_client.put(
             app.url_path_for(
                 "cleanings:update-cleaning-by-id",
-                id=darlenes_cleanings_list[0].id,
+                cleaning_id=darlenes_cleanings_list[0].id,
             ),
             json={"price": 99.99}
         )
@@ -266,7 +266,7 @@ class TestUpdatecleaning:
         response = await elliots_authorized_client.put(
             app.url_path_for(
                 "cleanings:update-cleaning-by-id",
-                id=test_cleaning.id,
+                cleaning_id=test_cleaning.id,
             ),
             json={"owner": user_darlene.id}
         )
@@ -298,7 +298,7 @@ class TestUpdatecleaning:
         # cleaning_update = {payload}
         res = await elliots_authorized_client.put(
             app.url_path_for("cleanings:update-cleaning-by-id",
-                             id=id if id is not None else test_cleaning.id),
+                             cleaning_id=id if id is not None else test_cleaning.id),
             json=payload
         )
         assert res.status_code == status_code
@@ -315,16 +315,15 @@ class TestDeletecleaning:
         response = await elliots_authorized_client.delete(
             app.url_path_for(
                 "cleanings:delete-cleaning-by-id",
-                id=test_cleaning.id,
+                cleaning_id=test_cleaning.id,
             ),
         )
-        print(response.json())
         assert response.status_code == status.HTTP_200_OK
         # ensure that the cleaning no longer exists
         response = await elliots_authorized_client.get(
             app.url_path_for(
                 "cleanings:get-cleaning-by-id",
-                id=test_cleaning.id,
+                cleaning_id=test_cleaning.id,
             ),
         )
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -339,7 +338,7 @@ class TestDeletecleaning:
         response = await elliots_authorized_client.delete(
             app.url_path_for(
                 "cleanings:delete-cleaning-by-id",
-                id=darlenes_cleanings_list[0].id,
+                cleaning_id=darlenes_cleanings_list[0].id,
             ),
         )
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -360,7 +359,7 @@ class TestDeletecleaning:
         status_code: int,
     ) -> None:
         res = await elliots_authorized_client.delete(
-            app.url_path_for("cleanings:delete-cleaning-by-id", id=id),
+            app.url_path_for("cleanings:delete-cleaning-by-id", cleaning_id=id),
         )
         print(res.json())
         assert res.status_code == status_code
