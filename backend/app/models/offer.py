@@ -8,7 +8,7 @@ class OfferStatus(str, Enum):
     accepted = "accepted"
     rejected = "rejected"
     pending = "pending"
-    canceled = "canceled"
+    cancelled = "cancelled"
 
 
 class OfferBase(CoreModel):

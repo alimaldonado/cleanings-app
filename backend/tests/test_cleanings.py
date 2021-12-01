@@ -67,8 +67,6 @@ class TestCreatecleaning:
             app.url_path_for("cleanings:create-cleaning"), json=new_cleaning.dict()
         )
 
-        print(response.json())
-
         assert response.status_code == status.HTTP_201_CREATED
 
         created_cleaning = CleaningPublic(**response.json())

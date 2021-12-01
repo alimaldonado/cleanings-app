@@ -210,3 +210,41 @@ async def test_cleaning_with_offers(
             )
 
     return created_cleaning
+
+
+@pytest.fixture
+async def test_cleaning_with_accepted_offer(
+    db: Database, user_darlene: UserInDB, user_mr_robot: UserInDB,
+    test_user_list: List[UserInDB]
+) -> CleaningInDB:
+    cleaning_repo = CleaningsRepository(db)
+    offers_repo = OffersRepository(db)
+
+    new_cleaning = CleaningCreate(
+        name="cleaning with offers",
+        description="lorem ipsum",
+        price=9.99,
+        cleaning_type="full_clean"
+    )
+
+    created_cleaning = await cleaning_repo.create_cleaning(
+        new_cleaning=new_cleaning, requesting_user=user_darlene
+    )
+
+    offers = []
+
+    for user in test_user_list:
+        offers.append(
+            await offers_repo.create_offer_for_cleaning(
+                new_offer=OfferCreate(
+                    cleaning_id=created_cleaning.id,
+                    user_id=user.id
+                )
+            )
+        )
+
+    await offers_repo.accept_offer(
+        offer=[o for o in offers if o.user_id == user_mr_robot.id][0],
+    )
+
+    return created_cleaning

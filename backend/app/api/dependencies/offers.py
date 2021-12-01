@@ -111,3 +111,26 @@ def check_offer_acceptance_permissions(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="That cleaning job already has an accepted offer."
         )
+
+
+async def get_offer_for_cleaning_from_current_user(
+    current_user: UserInDB = Depends(get_current_active_user),
+    cleaning: CleaningInDB = Depends(get_cleaning_by_id_from_path),
+    offers_repo: OffersRepository = Depends(get_repository(OffersRepository)),
+) -> OfferInDB:
+    return await get_offer_for_cleaning_from_user(
+        user=current_user,
+        cleaning=cleaning,
+        offers_repo=offers_repo
+    )
+
+
+def check_offer_cancel_permissions(
+    offer: OfferInDB = Depends(get_offer_for_cleaning_from_current_user),
+) -> None:
+
+    if offer.status != "accepted":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Can only cancel offers that have been accepted",
+        )

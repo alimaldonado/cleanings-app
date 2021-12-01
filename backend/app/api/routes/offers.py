@@ -9,7 +9,7 @@ from app.models.user import UserInDB
 from app.api.dependencies.cleanings import get_cleaning_by_id_from_path
 from app.api.dependencies.auth import get_current_active_user
 from app.api.dependencies.database import get_repository
-from app.api.dependencies.offers import check_offer_acceptance_permissions, check_offer_create_permissions, check_offer_get_permissions, check_offer_list_permissions, get_offer_for_cleaning_from_user_by_path, list_offers_for_cleaning_by_id_from_path
+from app.api.dependencies.offers import check_offer_acceptance_permissions, check_offer_cancel_permissions, check_offer_create_permissions, check_offer_get_permissions, check_offer_list_permissions, get_offer_for_cleaning_from_current_user, get_offer_for_cleaning_from_user_by_path, list_offers_for_cleaning_by_id_from_path
 
 from app.db.repositories.offers import OffersRepository
 
@@ -76,9 +76,20 @@ async def accept_offer_from_user(
     )
 
 
-@router.put("/", response_model=OfferPublic, name="offers:cancel-offer-from-user", status_code=status.HTTP_200_OK)
-async def cancel_offer_from_user() -> OfferPublic:
-    return None
+@router.put(
+    "/",
+    response_model=OfferPublic,
+    name="offers:cancel-offer-from-user",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(check_offer_cancel_permissions)]
+)
+async def cancel_offer_from_user(
+    offer: OfferInDB = Depends(get_offer_for_cleaning_from_current_user),
+    offers_repo: OffersRepository = Depends(get_repository(OffersRepository))
+) -> OfferPublic:
+    return await offers_repo.cancel_offer(
+        offer=offer,
+    )
 
 
 @router.delete("/", response_model=OfferPublic, name="offers:rescind-offer-from-user", status_code=status.HTTP_200_OK)
