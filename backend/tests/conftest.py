@@ -13,8 +13,12 @@ from app.models.cleaning import CleaningCreate, CleaningInDB
 from app.models.user import UserCreate, UserInDB
 from app.db.repositories.users import UsersRepository
 from app.db.repositories.cleanings import CleaningsRepository
+
 from app.core.config import SECRET_KEY, JWT_TOKEN_PREFIX
 from app.services import auth_service
+
+from app.models.offer import OfferCreate, OfferUpdate
+from app.db.repositories.offers import OffersRepository
 
 
 # Apply migrations at beginning and end of testing session
@@ -159,9 +163,9 @@ async def user_trenton(db: Database) -> UserInDB:
 
 @pytest.fixture
 async def test_user_list(
-    test_user3: UserInDB, test_user4: UserInDB, test_user5: UserInDB, test_user6: UserInDB,
+    user_mr_robot: UserInDB, user_tyrell: UserInDB, user_angela: UserInDB, user_trenton: UserInDB,
 ) -> List[UserInDB]:
-    return [test_user3, test_user4, test_user5, test_user6]
+    return [user_mr_robot, user_tyrell, user_angela, user_trenton]
 
 
 @pytest.fixture
@@ -178,3 +182,31 @@ def create_authorized_client(client: AsyncClient) -> Callable:
         return client
 
     return _create_authorized_client
+
+
+@pytest.fixture
+async def test_cleaning_with_offers(
+    db: Database,
+    user_darlene: UserInDB,
+    test_user_list: List[UserInDB]
+) -> CleaningInDB:
+    cleaning_repo = CleaningsRepository(db)
+    offers_repo = OffersRepository(db)
+
+    new_cleaning = CleaningCreate(
+        name="cleaning with offers", description="lorem ipsum", price=9.99, cleaning_type="full_clean"
+    )
+
+    created_cleaning = await cleaning_repo.create_cleaning(
+        new_cleaning=new_cleaning, requesting_user=user_darlene
+    )
+
+    for user in test_user_list:
+        if user.id != user_darlene.id:
+            await offers_repo.create_offer_for_cleaning(
+                new_offer=OfferCreate(
+                    cleaning_id=created_cleaning.id, user_id=user.id
+                )
+            )
+
+    return created_cleaning

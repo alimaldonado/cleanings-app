@@ -9,7 +9,7 @@ from app.models.user import UserInDB
 from app.api.dependencies.cleanings import get_cleaning_by_id_from_path
 from app.api.dependencies.auth import get_current_active_user
 from app.api.dependencies.database import get_repository
-from app.api.dependencies.offers import check_offer_create_permissions
+from app.api.dependencies.offers import check_offer_create_permissions, check_offer_get_permissions, check_offer_list_permissions, get_offer_for_cleaning_from_user_by_path, list_offers_for_cleaning_by_id_from_path
 
 from app.db.repositories.offers import OffersRepository
 
@@ -34,14 +34,30 @@ async def create_offer(
     )
 
 
-@router.get("/", response_model=List[OfferPublic], name="offers:list-offers-for-cleaning", status_code=status.HTTP_200_OK)
-async def list_offer_for_cleaning() -> List[OfferPublic]:
-    return None
+@router.get(
+    "/",
+    response_model=List[OfferPublic],
+    name="offers:list-offers-for-cleaning",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(check_offer_list_permissions)]
+)
+async def list_offer_for_cleaning(
+    offers: List[OfferInDB] = Depends(list_offers_for_cleaning_by_id_from_path)
+) -> List[OfferPublic]:
+    return offers
 
 
-@router.get("/{username}", response_model=OfferPublic, name="offers:get-offer-from-user", status_code=status.HTTP_200_OK)
-async def get_offer_from_user(username: str = Path(..., min_length=3)) -> OfferPublic:
-    return None
+@router.get(
+    "/{username}",
+    response_model=OfferPublic,
+    name="offers:get-offer-from-user",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(check_offer_get_permissions)]
+)
+async def get_offer_from_user(
+    offer: OfferInDB = Depends(get_offer_for_cleaning_from_user_by_path)
+) -> OfferPublic:
+    return offer
 
 
 @router.put("/{username}", response_model=OfferPublic, name="offers:accept-offer-from-user", status_code=status.HTTP_200_OK)
