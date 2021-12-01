@@ -11,6 +11,7 @@ from app.models.offer import OfferCreate, OfferUpdate, OfferInDB, OfferPublic
 
 pytestmark = pytest.mark.asyncio
 
+# it should be pretty much imposible to find a duplicate this way
 FAKE_ID = str(uuid.uuid4())
 
 
@@ -222,3 +223,123 @@ class TestGetOffers:
         )
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+class TestAcceptOffers:
+    async def test_cleaning_owner_can_accept_offer_succesfully(
+        self,
+        app: FastAPI,
+        create_authorized_client: Callable,
+        user_darlene: UserInDB,
+        test_user_list: List[UserInDB],
+        test_cleaning_with_offers: CleaningInDB
+    ) -> None:
+        selected_user = random.choice(test_user_list)
+
+        authorized_client = create_authorized_client(user=user_darlene)
+
+        response = await authorized_client.put(
+            app.url_path_for(
+                "offers:accept-offer-from-user",
+                cleaning_id=test_cleaning_with_offers.id,
+                username=selected_user.username
+            )
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        accepted_offer = OfferPublic(**response.json())
+
+        assert accepted_offer.status == "accepted"
+        assert accepted_offer.user_id == selected_user.id
+        assert accepted_offer.cleaning_id == test_cleaning_with_offers.id
+
+    async def test_non_owner_forbidden_from_accepting_offer_for_cleaning(
+        self,
+        app: FastAPI,
+        elliots_authorized_client: AsyncClient,
+        test_user_list: List[UserInDB],
+        test_cleaning_with_offers: CleaningInDB
+    ) -> None:
+        selected_user = random.choice(test_user_list)
+
+        response = await elliots_authorized_client.put(
+            app.url_path_for(
+                "offers:accept-offer-from-user",
+                cleaning_id=test_cleaning_with_offers.id,
+                username=selected_user.username
+            )
+        )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    async def test_cleaning_owner_cant_accept_multiple_offers(
+        self,
+        app: FastAPI,
+        create_authorized_client: Callable,
+        user_darlene: UserInDB,
+        test_user_list: List[UserInDB],
+        test_cleaning_with_offers: CleaningInDB
+    ) -> None:
+
+        authorized_client = create_authorized_client(user=user_darlene)
+
+        response = await authorized_client.put(
+            app.url_path_for(
+                "offers:accept-offer-from-user",
+                cleaning_id=test_cleaning_with_offers.id,
+                username=test_user_list[0].username
+            )
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        response = await authorized_client.put(
+            app.url_path_for(
+                "offers:accept-offer-from-user",
+                cleaning_id=test_cleaning_with_offers.id,
+                username=test_user_list[1].username
+            )
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    async def test_accepting_one_offer_rejects_all_other_offers(
+        self,
+        app: FastAPI,
+        create_authorized_client: Callable,
+        user_darlene: UserInDB,
+        test_user_list: List[UserInDB],
+        test_cleaning_with_offers: CleaningInDB
+    ) -> None:
+
+        selected_user = random.choice(test_user_list)
+
+        authorized_client = create_authorized_client(user=user_darlene)
+
+        response = await authorized_client.put(
+            app.url_path_for(
+                "offers:accept-offer-from-user",
+                cleaning_id=test_cleaning_with_offers.id,
+                username=selected_user.username
+            )
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        response = await authorized_client.get(
+            app.url_path_for(
+                "offers:list-offers-for-cleaning",
+                cleaning_id=test_cleaning_with_offers.id
+            )
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        offers = [OfferPublic(**o) for o in response.json()]
+
+        for offer in offers:
+            if offer.user_id == selected_user.id:
+                assert offer.status == "accepted"
+            else:
+                assert offer.status == "rejected"

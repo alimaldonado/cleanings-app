@@ -85,3 +85,29 @@ def check_offer_get_permissions(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Unable to access offer."
         )
+
+
+def check_offer_acceptance_permissions(
+    current_user: UserInDB = Depends(get_current_active_user),
+    cleaning: CleaningInDB = Depends(get_cleaning_by_id_from_path),
+    offer: OfferInDB = Depends(get_offer_for_cleaning_from_user_by_path),
+    existing_offers: List[OfferInDB] = Depends(
+        list_offers_for_cleaning_by_id_from_path)
+) -> None:
+    if cleaning.owner != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the owner of the cleaning may accept offers."
+        )
+
+    if offer.status != "pending":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Can only accept offers that are currently pending",
+        )
+
+    if "accepted" in [o.status for o in existing_offers]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="That cleaning job already has an accepted offer."
+        )
