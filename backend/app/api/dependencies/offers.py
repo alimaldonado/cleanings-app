@@ -75,7 +75,6 @@ def check_offer_list_permissions(
 
 
 def check_offer_get_permissions(
-
     current_user: UserInDB = Depends(get_current_active_user),
     cleaning: CleaningInDB = Depends(get_cleaning_by_id_from_path),
     offer: OfferInDB = Depends(get_offer_for_cleaning_from_user_by_path)

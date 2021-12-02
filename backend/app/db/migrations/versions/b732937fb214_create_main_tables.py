@@ -158,15 +158,59 @@ def create_offers_table() -> None:
     )
 
 
+def create_cleaner_evaluations_table() -> None:
+    op.create_table(
+        "cleaning_to_cleaner_evaluations",
+        sa.Column(
+            "cleaning_id",  # job that was completed
+            sa.CHAR(36),
+            sa.ForeignKey("cleanings.id", ondelete="SET NULL"),
+            nullable=False,
+            index=True,
+        ),
+        sa.Column(
+            "cleaner_id",  # user who completed the job
+            sa.CHAR(36),
+            sa.ForeignKey("users.id", ondelete="SET NULL"),
+            nullable=False,
+            index=True,
+        ),
+        sa.Column("no_show", sa.Boolean, nullable=False,
+                  server_default="False"),
+        sa.Column("headline", sa.Text, nullable=True),
+        sa.Column("comment", sa.Text, nullable=True),
+        sa.Column("professionalism", sa.Integer, nullable=True),
+        sa.Column("completeness", sa.Integer, nullable=True),
+        sa.Column("efficiency", sa.Integer, nullable=True),
+        sa.Column("overall_rating", sa.Integer, nullable=False),
+        *timestamps(),
+    )
+    op.create_primary_key(
+        "pk_cleaning_to_cleaner_evaluations", "cleaning_to_cleaner_evaluations", [
+            "cleaning_id", "cleaner_id"]
+    )
+    op.execute(
+        """
+        CREATE TRIGGER update_cleaning_to_cleaner_evaluations_modtime
+            BEFORE UPDATE
+            ON cleaning_to_cleaner_evaluations
+            FOR EACH ROW
+        EXECUTE PROCEDURE update_updated_at_column();
+        """
+    )
+
+
 def upgrade() -> None:
     create_updated_at_trigger()
     create_users_table()
     create_profiles_table()
     create_cleanings_table()
     create_offers_table()
+    create_cleaner_evaluations_table()
 
 
 def downgrade() -> None:
+    op.drop_table("cleaning_to_cleaner_evaluations")
     op.drop_table("user_offers_for_cleanings")
     op.drop_table("cleanings")
     op.drop_table("profiles")

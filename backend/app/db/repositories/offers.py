@@ -62,6 +62,13 @@ RESCIND_OFFER_QUERY = """
     AND user_id = :user_id
 """
 
+MARK_AS_COMPLETED_QUERY = """
+    UPDATE user_offers_for_cleanings
+    SET status = 'completed'
+    WHERE cleaning_id = :cleaning_id AND user_id = :user_id
+"""
+
+
 
 class OffersRepository(BaseRepository):
     async def create_offer_for_cleaning(self, *, new_offer: OfferCreate) -> OfferInDB:
@@ -127,5 +134,14 @@ class OffersRepository(BaseRepository):
             values={
                 "cleaning_id": offer.cleaning_id,
                 "user_id": offer.user_id
+            }
+        )
+
+    async def mark_as_completed(self, *, cleaning: CleaningInDB, cleaner: UserInDB) -> OfferInDB:
+        return await self.db.execute(
+            query=MARK_AS_COMPLETED_QUERY,
+            values={
+                "cleaning_id": cleaning.id,
+                "user_id": cleaner.id
             }
         )
