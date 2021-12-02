@@ -417,3 +417,109 @@ class TestCancelOffers:
                 assert offer.status == "cancelled"
             else:
                 assert offer.status == "pending"
+
+
+class TestRescindOffers:
+    async def test_user_can_succesfully_rescind_pending_offer(
+        self,
+        app: FastAPI,
+        create_authorized_client: Callable,
+        user_tyrell: UserInDB,
+        test_user_list: List[UserInDB],
+        test_cleaning_with_offers: CleaningInDB
+    ) -> None:
+        authorized_client = create_authorized_client(
+            user=user_tyrell
+        )
+
+        response = await authorized_client.delete(
+            app.url_path_for(
+                "offers:rescind-offer-from-user",
+                cleaning_id=test_cleaning_with_offers.id
+            )
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        offers_repo = OffersRepository(app.state._db)
+
+        offers = await offers_repo.list_offers_for_cleaning(
+            cleaning=test_cleaning_with_offers
+        )
+
+        user_ids = [user.id for user in test_user_list]
+
+        for offer in offers:
+            assert offer.user_id in user_ids
+            assert offer.user_id != user_tyrell.id
+
+    async def test_users_cannot_rescind_accepted_offers(
+        self,
+        app: FastAPI,
+        create_authorized_client: Callable,
+        user_mr_robot: UserInDB,
+        test_cleaning_with_accepted_offer: CleaningInDB
+    ) -> None:
+        authorized_client = create_authorized_client(
+            user=user_mr_robot
+        )
+
+        response = await authorized_client.delete(
+            app.url_path_for(
+                "offers:rescind-offer-from-user",
+                cleaning_id=test_cleaning_with_accepted_offer.id
+            )
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    
+    async def test_users_cannot_rescind_cancelled_offers(
+        self,
+        app: FastAPI,
+        create_authorized_client: Callable,
+        user_mr_robot: UserInDB,
+        test_cleaning_with_accepted_offer: CleaningInDB
+    ) -> None:
+        authorized_client = create_authorized_client(
+            user=user_mr_robot
+        )
+
+        response = await authorized_client.put(
+            app.url_path_for(
+                "offers:cancel-offer-from-user",
+                cleaning_id=test_cleaning_with_accepted_offer.id
+            )
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+
+        response = await authorized_client.delete(
+            app.url_path_for(
+                "offers:rescind-offer-from-user",
+                cleaning_id=test_cleaning_with_accepted_offer.id
+            )
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+    async def test_users_cannot_rescind_rejected_offers(
+        self,
+        app: FastAPI,
+        create_authorized_client: Callable,
+        user_tyrell: UserInDB,
+        test_cleaning_with_accepted_offer: CleaningInDB
+    ) -> None:
+        authorized_client = create_authorized_client(
+            user=user_tyrell
+        )
+
+        response = await authorized_client.delete(
+            app.url_path_for(
+                "offers:rescind-offer-from-user",
+                cleaning_id=test_cleaning_with_accepted_offer.id
+            )
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST

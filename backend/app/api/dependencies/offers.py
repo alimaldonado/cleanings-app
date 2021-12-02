@@ -134,3 +134,13 @@ def check_offer_cancel_permissions(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Can only cancel offers that have been accepted",
         )
+
+
+def check_offer_rescind_permissions(
+    offer: OfferInDB = Depends(get_offer_for_cleaning_from_current_user),
+) -> None:
+    if offer.status != "pending":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Can only rescind currently pending offers."
+        )
