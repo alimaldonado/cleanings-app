@@ -1,4 +1,5 @@
 from typing import Callable, List
+import random
 import warnings
 import os
 import pytest
@@ -10,9 +11,10 @@ import alembic
 from alembic.config import Config
 
 from app.models.cleaning import CleaningCreate, CleaningInDB
+from app.db.repositories.cleanings import CleaningsRepository
+
 from app.models.user import UserCreate, UserInDB
 from app.db.repositories.users import UsersRepository
-from app.db.repositories.cleanings import CleaningsRepository
 
 from app.core.config import SECRET_KEY, JWT_TOKEN_PREFIX
 from app.services import auth_service
@@ -20,6 +22,9 @@ from app.services import auth_service
 from app.models.offer import OfferCreate, OfferUpdate
 from app.db.repositories.offers import OffersRepository
 
+
+from app.models.evaluation import EvaluationCreate
+from app.db.repositories.evaluations import EvaluationsRepository
 
 # Apply migrations at beginning and end of testing session
 
@@ -248,3 +253,72 @@ async def test_cleaning_with_accepted_offer(
     )
 
     return created_cleaning
+
+
+async def create_cleaning_with_evaluated_offer_helper(
+    db: Database,
+    owner: UserInDB,
+    cleaner: UserInDB,
+    cleaning_create: CleaningCreate,
+    eval_create: EvaluationCreate
+) -> CleaningInDB:
+    cleaning_repo = CleaningsRepository(db)
+    offers_repo = OffersRepository(db)
+    eval_repo = EvaluationsRepository(db)
+
+    created_cleaning = await cleaning_repo.create_cleaning(
+        new_cleaning=cleaning_create,
+        requesting_user=owner
+    )
+
+    offer = await offers_repo.create_offer_for_cleaning(
+        new_offer=OfferCreate(
+            cleaning_id=created_cleaning.id,
+            user_id=cleaner.id
+        )
+    )
+
+    await offers_repo.accept_offer(
+        offer=offer,
+        offer_update=OfferUpdate(status="accepted")
+    )
+
+    await eval_repo.create_evaluation_for_cleaner(
+        evaluation_create=eval_create,
+        cleaning=created_cleaning,
+        cleaner=cleaner
+    )
+
+    return created_cleaning
+
+
+@pytest.fixture
+async def test_list_of_cleanings_with_evaluated_offer(
+    db: Database,
+    user_darlene: UserInDB,
+    user_mr_robot: UserInDB,
+) -> List[CleaningInDB]:
+    return [
+        await create_cleaning_with_evaluated_offer_helper(
+            db=db,
+            owner=user_darlene,
+            cleaner=user_mr_robot,
+            cleaning_create=CleaningCreate(
+                name=f"test cleaning - {i}",
+                description=f"test description - {i}",
+                price=float(f"{i}9.99"),
+                cleaning_type="full_clean",
+
+            ),
+            eval_create=EvaluationCreate(
+                professionalism=random.randint(0, 5),
+                completeness=random.randint(0, 5),
+                efficiency=random.randint(0, 5),
+                overall_rating=random.randint(0, 5),
+                headline=f"test headline - {i}",
+                comment=f"test comment - {i}",
+
+            )
+        )
+        for i in range(5)
+    ]
