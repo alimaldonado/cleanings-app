@@ -8,7 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 async def connect_to_db(app: FastAPI) -> None:
-    DB_URL = f"{DATABASE_URL}_test" if os.environ.get("TESTING") else DATABASE_URL
+    DB_URL = f"{DATABASE_URL}_test" if os.environ.get(
+        "TESTING") else DATABASE_URL
     database = Database(DB_URL, min_size=2, max_size=10)
 
     try:

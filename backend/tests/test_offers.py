@@ -473,7 +473,6 @@ class TestRescindOffers:
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    
     async def test_users_cannot_rescind_cancelled_offers(
         self,
         app: FastAPI,
@@ -502,7 +501,6 @@ class TestRescindOffers:
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-
 
     async def test_users_cannot_rescind_rejected_offers(
         self,

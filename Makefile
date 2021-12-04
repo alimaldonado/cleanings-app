@@ -26,6 +26,9 @@ downgrade-db: ## removes migrations, use with precaution
 be-logs: # Shows the containers logs
 	U_ID=${UID} docker-compose logs --follow
 
+tests: # Runs existent tests
+	U_ID=${UID} docker exec -it ${DOCKER_BE} pytest -v
+
 pep: # Runs PEP8 Style standards
 	U_ID=${UID} autopep8 . --recursive --in-place --pep8-passes 2000 --verbose
 

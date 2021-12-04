@@ -121,14 +121,15 @@ class TestGetcleaning:
         response = await elliots_authorized_client.get(app.url_path_for("cleanings:get-cleaning-by-id", cleaning_id=test_cleaning.id))
         assert response.status_code == status.HTTP_200_OK
         cleaning = CleaningInDB(**response.json())
-        
+
         assert cleaning == test_cleaning
 
     async def test_unauthorized_users_cant_access_cleanings(
         self, app: FastAPI, client: AsyncClient, test_cleaning: CleaningInDB
     ) -> None:
         response = await client.get(
-            app.url_path_for("cleanings:get-cleaning-by-id", cleaning_id=test_cleaning.id)
+            app.url_path_for("cleanings:get-cleaning-by-id",
+                             cleaning_id=test_cleaning.id)
         )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -357,7 +358,8 @@ class TestDeletecleaning:
         status_code: int,
     ) -> None:
         res = await elliots_authorized_client.delete(
-            app.url_path_for("cleanings:delete-cleaning-by-id", cleaning_id=id),
+            app.url_path_for(
+                "cleanings:delete-cleaning-by-id", cleaning_id=id),
         )
         print(res.json())
         assert res.status_code == status_code

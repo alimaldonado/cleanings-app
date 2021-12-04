@@ -12,6 +12,7 @@ class JWTMeta(CoreModel):
     exp: float = datetime.timestamp(
         datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
 
+
 class JWTCreds(CoreModel):
     """How we'll identify users"""
     sub: EmailStr
@@ -22,9 +23,7 @@ class JWTPayload(JWTMeta, JWTCreds):
     """JWT payload right before it's encoded"""
     pass
 
+
 class AccessToken(CoreModel):
     access_token: str
     token_type: str
-
-
-

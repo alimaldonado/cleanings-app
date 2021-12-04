@@ -69,7 +69,6 @@ MARK_AS_COMPLETED_QUERY = """
 """
 
 
-
 class OffersRepository(BaseRepository):
     async def create_offer_for_cleaning(self, *, new_offer: OfferCreate) -> OfferInDB:
         created_offer = await self.db.fetch_one(
