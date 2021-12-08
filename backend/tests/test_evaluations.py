@@ -188,6 +188,7 @@ class TestGetEvaluations:
 
         assert "test headline" in evaluation.headline
         assert "test comment" in evaluation.comment
+        # TODO: Modify model to accept only evals from 1 to 5 stars
         assert evaluation.professionalism > 0 and evaluation.professionalism <= 5
         assert evaluation.completeness > 0 and evaluation.completeness <= 5
         assert evaluation.efficiency > 0 and evaluation.efficiency <= 5
@@ -257,7 +258,7 @@ class TestGetEvaluations:
                     ) == stats.avg_overall_rating
         assert(
             mean([e.professionalism for e in evaluations if e.professionalism is not None]
-                 ) == stats.avg_profesionalism
+                 ) == stats.avg_professionalism
         )
         assert mean([e.completeness for e in evaluations if e.completeness is not None]
                     ) == stats.avg_completeness
@@ -271,7 +272,7 @@ class TestGetEvaluations:
         assert len([e for e in evaluations if e.overall_rating == 3]
                    ) == stats.three_stars
         assert len([e for e in evaluations if e.overall_rating == 4]
-                   ) == stats.four_star
+                   ) == stats.four_stars
         assert len([e for e in evaluations if e.overall_rating == 5]
                    ) == stats.five_stars
 
@@ -293,8 +294,10 @@ class TestGetEvaluations:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
         response = await client.get(
-            app.url_path_for("evaluations:list-evaluations-for-cleaner"),
-            username=user_mr_robot.username,
+            app.url_path_for(
+                "evaluations:list-evaluations-for-cleaner",
+                username=user_mr_robot.username
+            )
         )
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED

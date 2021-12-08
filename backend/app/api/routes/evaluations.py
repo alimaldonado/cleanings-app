@@ -12,7 +12,7 @@ from app.api.dependencies.cleanings import get_cleaning_by_id_from_path
 from app.api.dependencies.users import get_user_by_username_from_path
 
 from app.db.repositories.evaluations import EvaluationsRepository
-from app.api.dependencies.evaluations import check_evaluation_create_permissions
+from app.api.dependencies.evaluations import check_evaluation_create_permissions, get_cleaner_evaluation_for_cleaning_from_path, list_evaluations_for_cleaner_from_path
 
 
 router = APIRouter()
@@ -41,10 +41,19 @@ async def create_evaluation_for_cleaner(
     "/",
     response_model=List[EvaluationPublic],
     name="evaluations:list-evaluations-for-cleaner",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
-async def list_evaluation_for_cleaning() -> List[EvaluationPublic]:
-    return None
+async def list_evaluation_for_cleaning(
+    evaluations: List[EvaluationInDB] = Depends(
+        list_evaluations_for_cleaner_from_path)
+) -> List[EvaluationPublic]:
+    return evaluations
+
+# Important note! The order in which we define these routes ABSOLUTELY DOES
+# MATTER. If we were to put the /stats/ route after our
+# evaluations:get-evaluation-for-cleaner route, that stats route wouldn't
+# work. FastAPI would assume that "stats" is the ID of a cleaning and throw a 422
+# error since "stats" is not an integer id.
 
 
 @router.get(
@@ -53,8 +62,12 @@ async def list_evaluation_for_cleaning() -> List[EvaluationPublic]:
     name="evaluations:get-stats-for-cleaner",
     status_code=status.HTTP_200_OK
 )
-async def get_evaluation_from_user() -> EvaluationPublic:
-    return None
+async def get_evaluation_from_user(
+    cleaner: UserInDB = Depends(get_user_by_username_from_path),
+    evals_repo: EvaluationsRepository = Depends(
+        get_repository(EvaluationsRepository))
+) -> EvaluationPublic:
+    return await evals_repo.get_cleaner_aggregates(cleaner=cleaner)
 
 
 @router.get(
@@ -63,5 +76,8 @@ async def get_evaluation_from_user() -> EvaluationPublic:
     name="evaluations:get-evaluation-for-cleaner",
     status_code=status.HTTP_200_OK
 )
-async def create_evaluation_for_cleaner() -> EvaluationPublic:
-    return None
+async def create_evaluation_for_cleaner(
+    evaluation: EvaluationInDB = Depends(
+        get_cleaner_evaluation_for_cleaning_from_path)
+) -> EvaluationPublic:
+    return evaluation

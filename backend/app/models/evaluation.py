@@ -31,22 +31,22 @@ class EvaluationInDB(DateTimeModelMixin, EvaluationBase):
 
 
 class EvaluationAggregate(CoreModel):
-    avg_profesionalism: confloat(ge=0, le=5)
+    avg_professionalism: confloat(ge=0, le=5)
     avg_completeness: confloat(ge=0, le=5)
     avg_efficiency: confloat(ge=0, le=5)
     avg_overall_rating: confloat(ge=0, le=5)
-    max_overall_rating: confloat(ge=0, le=5)
-    min_overall_rating: confloat(ge=0, le=5)
+    max_overall_rating: conint(ge=0, le=5)
+    min_overall_rating: conint(ge=0, le=5)
     one_stars: conint(ge=0)
     two_stars: conint(ge=0)
     three_stars: conint(ge=0)
-    four_star: conint(ge=0)
+    four_stars: conint(ge=0)
     five_stars: conint(ge=0)
     total_evaluations: conint(ge=0)
     total_no_show: conint(ge=0)
 
 
 class EvaluationPublic(EvaluationInDB):
-    owner: Optional[Union[int, UserPublic]]
+    owner: Optional[Union[str, UserPublic]]
     cleaner: Optional[UserPublic]
     cleaning: Optional[CleaningPublic]

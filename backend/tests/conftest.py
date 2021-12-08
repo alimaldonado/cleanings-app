@@ -280,7 +280,7 @@ async def create_cleaning_with_evaluated_offer_helper(
 
     await offers_repo.accept_offer(
         offer=offer,
-        offer_update=OfferUpdate(status="accepted")
+        # offer_update=OfferUpdate(status="accepted")
     )
 
     await eval_repo.create_evaluation_for_cleaner(
