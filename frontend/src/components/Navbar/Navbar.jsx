@@ -9,9 +9,10 @@ import {
   EuiHeaderSectionItemButton,
   EuiAvatar,
 } from "@elastic/eui";
-import loginIcon from "../../assets/img/loginIcon.svg";
-
+import { Link } from "react-router-dom";
 import styled from "styled-components";
+
+import loginIcon from "../../assets/img/loginIcon.svg";
 
 const LogoSection = styled(EuiHeaderLink)`
   padding: 0 2rem;
@@ -23,15 +24,13 @@ const Navbar = ({ user, ...props }) => {
       <EuiHeaderSection>
         <EuiHeaderSectionItem border="right">
           <LogoSection href="/">
-            <EuiIcon type="cloudDrizzle" color="#1E90FF" size="1" />
-            Phresh
+            <EuiIcon type="cloudDrizzle" color="#1E90FF" size="l" /> Phresh
           </LogoSection>
         </EuiHeaderSectionItem>
-
         <EuiHeaderSectionItem border="right">
-          <EuiHeaderLinks aria-label="app navitation links">
+          <EuiHeaderLinks aria-label="app navigation links">
             <EuiHeaderLink iconType="tear" href="#">
-              Find Cleaner
+              Find Cleaners
             </EuiHeaderLink>
             <EuiHeaderLink iconType="tag" href="#">
               Find Jobs
@@ -46,17 +45,19 @@ const Navbar = ({ user, ...props }) => {
         <EuiHeaderSectionItemButton aria-label="User avatar">
           {user?.profile ? (
             <EuiAvatar
-              size="1"
+              size="l"
               name={user.profile.full_name}
               imageUrl={user.profile.image}
             />
           ) : (
-            <EuiAvatar
-              size="1"
-              color="#1E90FF"
-              name="user"
-              imageUrl={loginIcon}
-            />
+            <Link to="/login">
+              <EuiAvatar
+                size="l"
+                color="#1E90FF"
+                name="user"
+                imageUrl={loginIcon}
+              />
+            </Link>
           )}
         </EuiHeaderSectionItemButton>
       </EuiHeaderSection>
