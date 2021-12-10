@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 const AnimatedTitle = styled.div`
   margin-bottom: 1rem;
-  &h1 {
+  & h1 {
     display: flex;
     color: #212121;
     margin: 0 0.25rem;
@@ -38,7 +38,7 @@ const AnimatedCarouselTitle = styled.span`
 `;
 
 const transitionDuration = 0.4;
-const transitionEase = [0.68, 0.55, 0.265, 1.55];
+const transitionEase = [0.68, -0.55, 0.265, 1.55];
 const statement = `For busy people who need their`;
 
 const CarouselTitle = ({ items, current }) => {
