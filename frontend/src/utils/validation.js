@@ -13,7 +13,7 @@ export function validateEmail(text) {
  * Ensures password is at least a certain lenght
  *
  * @param {String} password - password to be validated
- * @param {Integer} lenght - length password must be as long as
+ * @param {Integer} length - length password must be as long as
  * @return {Boolean}
  */
 export function validatePassword(password, length = 7) {

@@ -33,7 +33,7 @@ const LoginForm = ({
   const validateInput = (label, value) => {
     // grab validation function and run it on input if it exists
     // if it doesn't exists, just assume the input is valid
-    const isValid = validation?.[label] ? validation?.[label]?.value : true;
+    const isValid = validation?.[label] ? validation?.[label]?.(value) : true;
 
     // set an error if the validation did not return true
     setErrors((errors) => ({ ...errors, [label]: !isValid }));
@@ -49,27 +49,15 @@ const LoginForm = ({
 
     // validate inputs before submitting
     Object.keys(form).forEach((label) => validateInput(label, form[label]));
-
     // if any input hasn't been entered in, return early
-    if (!Object.values(form).every((value) => Boolean(value))) {
-      setErrors((errors) => ({
-        ...errors,
-        form: "You must fill out all fields.",
-      }));
-      return;
-    }
+    if (!Object.values(form).every((value) => !!value)) return;
 
     await requestUserLogin({ email: form.email, password: form.password });
   };
 
   return (
     <LoginFormWrapper>
-      <EuiForm
-        component="form"
-        onSubmit={handleSubmit}
-        isInvalid={Boolean(errors.form)}
-        error={errors.form}
-      >
+      <EuiForm component="form" onSubmit={handleSubmit}>
         <EuiFormRow
           label="Email"
           helpText="Enter the email associated with your account."
@@ -109,7 +97,7 @@ const LoginForm = ({
       </EuiForm>
       <EuiSpacer size="xl" />
       <NeedAccountLink>
-        Need an acount? Sign up <Link to="/registration">here</Link>
+        Need an account? Sign up <Link to="/registration">here</Link>.
       </NeedAccountLink>
     </LoginFormWrapper>
   );

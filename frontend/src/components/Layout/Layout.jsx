@@ -6,7 +6,7 @@ import "@elastic/eui/dist/eui_theme_light.css";
 import "../../assets/css/fonts.css";
 import "../../assets/css/override.css";
 
-import { Navbar } from "..";
+import { Navbar } from "../../components";
 
 const customTheme = {
   ...euiVars,
