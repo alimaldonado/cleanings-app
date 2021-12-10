@@ -10,6 +10,7 @@ build: ## Rebuilds all the containers
 
 run: ## Start the containers
 	U_ID=${UID} docker-compose up -d
+	U_ID=${UID} yarn --cwd ./frontend start
 
 stop: ## Stop the containers
 	U_ID=${UID} docker-compose stop

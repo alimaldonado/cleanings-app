@@ -6,6 +6,8 @@ import "@elastic/eui/dist/eui_theme_light.css";
 import "../../assets/css/fonts.css";
 import "../../assets/css/override.css";
 
+import { Navbar } from "..";
+
 const customTheme = {
   ...euiVars,
   euiTitleColor: "dodgerblue",
@@ -39,6 +41,7 @@ const Layout = ({ children }) => {
       </Helmet>
       <ThemeProvider theme={customTheme}>
         <StyledLayout>
+          <Navbar></Navbar>
           <StyledMain>{children}</StyledMain>
         </StyledLayout>
       </ThemeProvider>

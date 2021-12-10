@@ -5,21 +5,60 @@ import {
   EuiHeaderSection,
   EuiHeaderSectionItem,
   EuiHeaderLink,
+  EuiHeaderLinks,
+  EuiHeaderSectionItemButton,
+  EuiAvatar,
 } from "@elastic/eui";
+import loginIcon from "../../assets/img/loginIcon.svg";
+
 import styled from "styled-components";
 
 const LogoSection = styled(EuiHeaderLink)`
   padding: 0 2rem;
 `;
 
-const Navbar = ({ ...props }) => {
+const Navbar = ({ user, ...props }) => {
   return (
     <EuiHeader style={props.style || {}}>
       <EuiHeaderSection>
-        <LogoSection href="">
-          <EuiIcon type="cloudDrizzle" color="#1E90FF" size="1" />
-          Phresh
-        </LogoSection>
+        <EuiHeaderSectionItem border="right">
+          <LogoSection href="/">
+            <EuiIcon type="cloudDrizzle" color="#1E90FF" size="1" />
+            Phresh
+          </LogoSection>
+        </EuiHeaderSectionItem>
+
+        <EuiHeaderSectionItem border="right">
+          <EuiHeaderLinks aria-label="app navitation links">
+            <EuiHeaderLink iconType="tear" href="#">
+              Find Cleaner
+            </EuiHeaderLink>
+            <EuiHeaderLink iconType="tag" href="#">
+              Find Jobs
+            </EuiHeaderLink>
+            <EuiHeaderLink iconType="help" href="#">
+              Help
+            </EuiHeaderLink>
+          </EuiHeaderLinks>
+        </EuiHeaderSectionItem>
+      </EuiHeaderSection>
+      <EuiHeaderSection>
+        <EuiHeaderSectionItemButton aria-label="User avatar">
+          {user?.profile ? (
+            <EuiAvatar
+              size="1"
+              name={user.profile.full_name}
+              imageUrl={user.profile.image}
+            />
+          ) : (
+            <EuiAvatar
+              size="1"
+              color="#1E90FF"
+              name="user"
+              imageUrl={loginIcon}
+            />
+          )}
+        </EuiHeaderSectionItemButton>
       </EuiHeaderSection>
     </EuiHeader>
   );
