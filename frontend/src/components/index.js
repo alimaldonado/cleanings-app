@@ -9,3 +9,4 @@ export { default as NotFoundPage } from "./NotFoundPage/NotFoundPage";
 export { default as ProfilePage } from "./ProfilePage/ProfilePage";
 export { default as RegistrationPage } from "./RegistrationPage/RegistrationPage";
 export { default as LoginForm } from "./LoginForm/LoginForm";
+export { default as RegistrationForm } from "./RegistrationForm/RegistrationForm";
