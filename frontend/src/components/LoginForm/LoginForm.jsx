@@ -1,4 +1,9 @@
 import React from "react";
+import { connect } from "react-redux";
+import {
+  Actions as authActions,
+  FETCHING_USER_FROM_TOKEN_SUCCESS,
+} from "../../redux/auth";
 import {
   EuiButton,
   EuiFieldText,
@@ -7,7 +12,7 @@ import {
   EuiFieldPassword,
   EuiSpacer,
 } from "@elastic/eui";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import validation from "../../utils/validation";
 import styled from "styled-components";
 
@@ -20,13 +25,24 @@ const NeedAccountLink = styled.span`
 `;
 
 const LoginForm = ({
-  requestUserLogin = async ({ email, password }) =>
-    console.log(`Logging in with  ${email}  and ${password}.`),
+  user,
+  authError,
+  isLoading,
+  isAuthenticated,
+  requestUserLogin,
 }) => {
   const [form, setForm] = React.useState({
     email: "",
     password: "",
   });
+  const [hasSubmitted, setHasSubmitted] = React.useState(false);
+
+  const navigate = useNavigate();
+
+  // If the user is authenticated, rediret to profile
+  React.useEffect(() => {
+    if (user?.email && isAuthenticated) navigate("/profile");
+  }, [user, navigate, isAuthenticated]);
 
   const [errors, setErrors] = React.useState({});
 
@@ -47,17 +63,38 @@ const LoginForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // validate inputs before submitting
-    Object.keys(form).forEach((label) => validateInput(label, form[label]));
-    // if any input hasn't been entered in, return early
-    if (!Object.values(form).every((value) => !!value)) return;
+    setHasSubmitted(true);
+    const action = await requestUserLogin({
+      email: form.email,
+      password: form.password,
+    });
 
-    await requestUserLogin({ email: form.email, password: form.password });
+    if (action.type !== FETCHING_USER_FROM_TOKEN_SUCCESS)
+      setForm((form) => ({ ...form, password: "" }));
+  };
+
+  const getFormErrors = () => {
+    const formErrors = [];
+
+    if (authError && hasSubmitted) {
+      formErrors.push(`Invalid credentials. Please try again.`);
+    }
+
+    if (errors.form) {
+      formErrors.push(errors.form);
+    }
+
+    return formErrors;
   };
 
   return (
     <LoginFormWrapper>
-      <EuiForm component="form" onSubmit={handleSubmit}>
+      <EuiForm
+        component="form"
+        onSubmit={handleSubmit}
+        isInvalid={Boolean(getFormErrors().length)}
+        error={getFormErrors()}
+      >
         <EuiFormRow
           label="Email"
           helpText="Enter the email associated with your account."
@@ -91,7 +128,7 @@ const LoginForm = ({
         </EuiFormRow>
         <EuiSpacer />
 
-        <EuiButton type="submit" fill>
+        <EuiButton type="submit" fill isLoading={isLoading}>
           Submit
         </EuiButton>
       </EuiForm>
@@ -103,4 +140,16 @@ const LoginForm = ({
   );
 };
 
-export default LoginForm;
+const mapStateToProps = (state) => ({
+  authError: state.auth.error,
+  isLoading: state.auth.isLoading,
+  isAuthenticated: state.auth.isAuthenticated,
+  user: state.auth.user,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  requestUserLogin: ({ email, password }) =>
+    dispatch(authActions.requestUserLogin({ email, password })),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(LoginForm);
