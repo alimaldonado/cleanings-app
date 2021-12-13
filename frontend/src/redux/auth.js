@@ -142,5 +142,6 @@ Actions.fetchUserFromToken = (access_token) => {
 };
 
 Actions.logUserOut = () => {
+  localStorage.removeItem("access_token");
   return { type: REQUEST_LOG_USER_OUT };
 };
