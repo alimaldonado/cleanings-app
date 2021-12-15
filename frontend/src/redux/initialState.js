@@ -5,4 +5,10 @@ export default {
     error: false,
     user: {},
   },
+  cleanings: {
+    isLoading: false,
+    error: false,
+    data: {},
+    currentCleaningJob: null,
+  },
 };

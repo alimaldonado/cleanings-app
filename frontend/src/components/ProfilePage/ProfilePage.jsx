@@ -9,7 +9,7 @@ import {
   EuiPageContent,
   EuiPageContentBody,
   EuiPageHeader,
-  EuiHeaderSection,
+  // EuiHeaderSection,
   EuiTitle,
   EuiText,
   EuiPageHeaderSection,

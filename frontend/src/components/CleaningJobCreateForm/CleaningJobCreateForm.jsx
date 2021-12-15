@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { Actions as cleaningActions } from "../../redux/cleanings";
 import {
   EuiButton,
   EuiFieldText,
@@ -66,7 +67,7 @@ const CleaningJobCreateForm = ({
   user,
   cleaningError,
   isLoading,
-  createCleaning = async () => console.log("fake create cleaning submission"),
+  createCleaning,
 }) => {
   const [form, setForm] = useState({
     name: "",
@@ -110,9 +111,10 @@ const CleaningJobCreateForm = ({
     }
     setHasSubmitted(true);
 
-    const response = await createCleaning({ ...form });
+    const response = await createCleaning({...form});
+    
     if (response?.success) {
-      const cleaningId = response.date?.id;
+      const cleaningId = response.data?.id;
 
       navigate(`/cleaning-jobs/${cleaningId}`);
     }
@@ -193,4 +195,13 @@ const CleaningJobCreateForm = ({
   );
 };
 
-export default connect()(CleaningJobCreateForm);
+export default connect(
+  (state) => ({
+    user: state.auth.user,
+    cleaningError: state.cleanings.error,
+    isLoading: state.cleanings.isLoading,
+  }),
+  {
+    createCleaning: cleaningActions.createCleaningJob,
+  }
+)(CleaningJobCreateForm);
