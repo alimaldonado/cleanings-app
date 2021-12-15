@@ -15,7 +15,7 @@ import {
   EuiFlexItem,
   EuiLink,
 } from "@elastic/eui";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import loginIcon from "../../assets/img/loginIcon.svg";
@@ -36,12 +36,15 @@ const AvatarMenu = styled.div`
 
 const Navbar = ({ user, logUserOut, ...props }) => {
   const [avatarMenuOpen, setAvatarMenuOpen] = React.useState(false);
+  const navigate = useNavigate();
+
   const toggleAvatarMenu = () => setAvatarMenuOpen(!avatarMenuOpen);
   const closeAvatarMenu = () => setAvatarMenuOpen(false);
 
   const handleLogout = () => {
     closeAvatarMenu();
     logUserOut();
+    navigate("/");
   };
 
   const avatarButton = (
@@ -52,7 +55,7 @@ const Navbar = ({ user, logUserOut, ...props }) => {
       {user?.profile ? (
         <EuiAvatar
           size="l"
-          name={user.profile.full_name || "Anonymous"}
+          name={user.profile.full_name || user.username || "Anonymous"}
           initialsLength={2}
           imageUrl={user.profile.image}
         />
