@@ -19,7 +19,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route
-            path="/cleaning-jobs"
+            path="/cleaning-jobs/*"
             element={<ProtectedRoute component={CleaningJobsPage} />}
           />
           <Route path="/login" element={<LoginPage />} />

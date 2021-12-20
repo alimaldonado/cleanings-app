@@ -1,9 +1,11 @@
 export { default as App } from "./App/App";
 export { default as Carousel } from "./Carousel/Carousel";
 export { default as CarouselTitle } from "./CarouselTitle/CarouselTitle";
+export { default as CleaningJobCard } from "./CleaningJobCard/CleaningJobCard";
 export { default as CleaningJobCreateForm } from "./CleaningJobCreateForm/CleaningJobCreateForm";
 export { default as CleaningJobsHome } from "./CleaningJobsHome/CleaningJobsHome";
 export { default as CleaningJobsPage } from "./CleaningJobsPage/CleaningJobsPage";
+export { default as CleaningJobView } from "./CleaningJobView/CleaningJobView";
 export { default as LandingPage } from "./LandingPage/LandingPage";
 export { default as Layout } from "./Layout/Layout";
 export { default as LoginForm } from "./LoginForm/LoginForm";

@@ -51,7 +51,7 @@ class ProfilesRepository(BaseRepository):
 
         return created_profile
 
-    async def get_profile_by_user_id(self, *, user_id: int) -> ProfileInDB:
+    async def get_profile_by_user_id(self, *, user_id: str) -> ProfileInDB:
         profile_record = await self.db.fetch_one(query=GET_PROFILE_BY_USER_ID_QUERY, values={"user_id": user_id})
 
         if not profile_record:
