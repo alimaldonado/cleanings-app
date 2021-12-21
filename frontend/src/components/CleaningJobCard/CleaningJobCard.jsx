@@ -10,6 +10,8 @@ import {
   EuiLoadingChart,
 } from "@elastic/eui";
 import styled from "styled-components";
+import moment from "moment";
+import { shallowEqual, useSelector } from "react-redux";
 
 const ImageHolder = styled.div`
   min-width: 400px;
@@ -27,7 +29,19 @@ const cleaningTypeToDisplayNameMapping = {
   full_clean: "Full Clean",
 };
 
-const CleaningJobCard = ({ cleaningJob }) => {
+const CleaningJobCard = ({
+  cleaningJob,
+  user,
+  isOwner,
+  offersError,
+  offersIsLoading,
+  createOfferForCleaning,
+}) => {
+  const userOfferForCleaningJob = useSelector(
+    (state) => state.offers.data?.[cleaningJob?.id]?.[user?.id],
+    shallowEqual
+  );
+
   const image = (
     <ImageHolder>
       <EuiLoadingChart size="xl" style={{ position: "absolute", zIndex: 1 }} />
@@ -58,11 +72,31 @@ const CleaningJobCard = ({ cleaningJob }) => {
         </EuiFlexItem>
 
         <EuiFlexItem grow={false}>
-          <EuiButton>Offer Services</EuiButton>
+          {isOwner || userOfferForCleaningJob ? null : (
+            <EuiButton
+              onClick={() => {
+                createOfferForCleaning({ cleaning_id: cleaningJob.id });
+              }}
+              isLoading={offersIsLoading}
+            >
+              Offer Services
+            </EuiButton>
+          )}
         </EuiFlexItem>
       </EuiFlexGroup>
     </>
   );
+
+  const betaBadgeLabel = userOfferForCleaningJob
+    ? `Offer ${userOfferForCleaningJob.status}`.toUpperCase()
+    : null;
+
+  const betaBadgeTooltipContent = userOfferForCleaningJob
+    ? `Offer sent on ${moment(
+        new Date(userOfferForCleaningJob.created_at)
+      ).format("MMM Do YYYY")}`
+    : null;
+
   return (
     <EuiCard
       display="plain"
@@ -71,6 +105,8 @@ const CleaningJobCard = ({ cleaningJob }) => {
       title={title}
       description={cleaningJob.description}
       footer={footer}
+      betaBadgeLabel={betaBadgeLabel}
+      betaBadgeTooltipContent={betaBadgeTooltipContent}
     />
   );
 };

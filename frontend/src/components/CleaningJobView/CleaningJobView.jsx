@@ -17,6 +17,7 @@ import {
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { Actions as cleaningActions } from "../../redux/cleanings";
+import { Actions as offersActions } from "../../redux/offers";
 import {
   CleaningJobCard,
   CleaningJobEditForm,
@@ -39,17 +40,35 @@ const CleaningJobView = ({
   currentCleaningJob,
   fetchCleaningJobById,
   clearCurrentCleaningJob,
+
+  offersError,
+  offersIsLoading,
+  createOfferForCleaning,
+  fetchUserOfferForCleaningJob,
 }) => {
   const { cleaning_id } = useParams();
 
   const navigate = useNavigate();
 
+  const userOwnsCleaningResource =
+    user?.username && currentCleaningJob?.owner?.id === user?.id;
+
   useEffect(() => {
-    if (cleaning_id) {
+    if (cleaning_id && user?.username) {
       fetchCleaningJobById({ cleaning_id });
+
+      if (!userOwnsCleaningResource)
+        fetchUserOfferForCleaningJob({ cleaning_id, username: user.username });
     }
     return () => clearCurrentCleaningJob();
-  }, [cleaning_id, fetchCleaningJobById, clearCurrentCleaningJob]);
+  }, [
+    cleaning_id,
+    fetchCleaningJobById,
+    clearCurrentCleaningJob,
+    userOwnsCleaningResource,
+    fetchUserOfferForCleaningJob,
+    user,
+  ]);
 
   if (isLoading) return <EuiLoadingSpinner size="xl" />;
   if (!currentCleaningJob) return <EuiLoadingSpinner size="xl" />;
@@ -70,6 +89,17 @@ const CleaningJobView = ({
       iconType={"sortLeft"}
       size="s"
       onClick={() => navigate(`/cleaning-jobs/${currentCleaningJob.id}`)}
+    />
+  );
+
+  const viewCleaningJobElement = (
+    <CleaningJobCard
+      user={user}
+      offersError={offersError}
+      cleaningJob={currentCleaningJob}
+      offersIsLoading={offersIsLoading}
+      isOwner={userOwndCleaningResource}
+      createOfferForCleaning={createOfferForCleaning}
     />
   );
 
@@ -124,10 +154,7 @@ const CleaningJobView = ({
 
           <EuiPageContentBody>
             <Routes>
-              <Route
-                path="/"
-                element={<CleaningJobCard cleaningJob={currentCleaningJob} />}
-              />
+              <Route path="/" element={viewCleaningJobElement} />
               <Route path="/edit" element={editCleaningJobElement} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
@@ -144,9 +171,15 @@ export default connect(
     isLoading: state.cleanings.isLoading,
     cleaningError: state.cleanings.cleaningsError,
     currentCleaningJob: state.cleanings.currentCleaningJob,
+
+    offersIsLoading: state.offers.isLoading,
+    offersError: state.offers.error,
   }),
   {
     fetchCleaningJobById: cleaningActions.fetchCleaningJobById,
     clearCurrentCleaningJob: cleaningActions.clearCurrentCleaningJob,
+
+    createOfferForCleaning: offersActions.createOfferForCleaning,
+    fetchUserOfferForCleaningJob: offersActions.fetchUserOfferForCleaningJob,
   }
 )(CleaningJobView);

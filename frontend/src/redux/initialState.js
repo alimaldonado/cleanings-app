@@ -12,4 +12,10 @@ export default {
     data: {},
     currentCleaningJob: null,
   },
+  offers: {
+    isLoading: false,
+    isUpdating: false,
+    error: false,
+    data: {},
+  },
 };
