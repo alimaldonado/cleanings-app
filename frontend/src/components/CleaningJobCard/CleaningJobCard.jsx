@@ -10,7 +10,6 @@ import {
   EuiLoadingChart,
 } from "@elastic/eui";
 import styled from "styled-components";
-import moment from "moment";
 import { shallowEqual, useSelector } from "react-redux";
 
 const ImageHolder = styled.div`
@@ -92,9 +91,13 @@ const CleaningJobCard = ({
     : null;
 
   const betaBadgeTooltipContent = userOfferForCleaningJob
-    ? `Offer sent on ${moment(
-        new Date(userOfferForCleaningJob.created_at)
-      ).format("MMM Do YYYY")}`
+    ? `Offer sent on ${new Date(
+        userOfferForCleaningJob.created_at
+      ).toLocaleDateString("en-us", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })}`
     : null;
 
   return (
@@ -105,8 +108,10 @@ const CleaningJobCard = ({
       title={title}
       description={cleaningJob.description}
       footer={footer}
-      betaBadgeLabel={betaBadgeLabel}
-      betaBadgeTooltipContent={betaBadgeTooltipContent}
+      betaBadgeProps={{
+        label: betaBadgeLabel,
+        tooltipContent: betaBadgeTooltipContent,
+      }}
     />
   );
 };

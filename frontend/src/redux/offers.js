@@ -40,6 +40,8 @@ export default function offersReducer(
         ...state,
         isLoading: false,
       };
+    case CREATE_OFFER_FOR_CLEANING_JOB_SUCCESS:
+      return updateStateWithOfferForCleaning(state, action.data);
     case CREATE_OFFER_FOR_CLEANING_JOB_FAILURE:
       return {
         ...state,
@@ -51,7 +53,6 @@ export default function offersReducer(
         ...state,
         isLoading: true,
       };
-    case CREATE_OFFER_FOR_CLEANING_JOB_SUCCESS:
     case FETCH_USER_OFFER_FOR_CLEANING_JOB_SUCCESS:
       return updateStateWithOfferForCleaning(state, action.data);
     case FETCH_USER_OFFER_FOR_CLEANING_JOB_FAILURE:
@@ -84,8 +85,8 @@ Actions.createOfferForCleaning = ({ cleaning_id }) => {
 
 Actions.fetchUserOfferForCleaningJob = ({ cleaning_id, username }) => {
   return apiClient({
-    url: `/cleanings/${cleaning_id}/offers/${username}`,
-    method: "GET",
+    url: `/cleanings/${cleaning_id}/offers/${username}/`,
+    method: `GET`,
     types: {
       REQUEST: FETCH_USER_OFFER_FOR_CLEANING_JOB,
       SUCCESS: FETCH_USER_OFFER_FOR_CLEANING_JOB_SUCCESS,

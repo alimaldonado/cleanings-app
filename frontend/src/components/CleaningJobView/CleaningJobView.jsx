@@ -57,15 +57,18 @@ const CleaningJobView = ({
     if (cleaning_id && user?.username) {
       fetchCleaningJobById({ cleaning_id });
 
-      if (!userOwnsCleaningResource)
+      if (!userOwnsCleaningResource) {
         fetchUserOfferForCleaningJob({ cleaning_id, username: user.username });
+      }
     }
+    console.log(userOwnsCleaningResource);
     return () => clearCurrentCleaningJob();
+    // eslint-disable-next-line
   }, [
     cleaning_id,
     fetchCleaningJobById,
     clearCurrentCleaningJob,
-    userOwnsCleaningResource,
+    // userOwnsCleaningResource,
     fetchUserOfferForCleaningJob,
     user,
   ]);
