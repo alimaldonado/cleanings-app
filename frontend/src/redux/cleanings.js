@@ -15,6 +15,12 @@ export const FETCH_CLEANING_JOB_BY_ID_FAILURE =
 export const CLEAR_CURRENT_CLEANING_JOB =
   "@@cleanings/CLEAR_CURRENT_CLEANING_JOB";
 
+export const UPDATE_CLEANING_JOB = "@@cleanings/UPDATE_CLEANING_JOB";
+export const UPDATE_CLEANING_JOB_SUCCESS =
+  "@@cleanings/UPDATE_CLEANING_JOB_SUCCESS";
+export const UPDATE_CLEANING_JOB_FAILURE =
+  "@@cleanings/UPDATE_CLEANING_JOB_FAILURE";
+
 export default function cleaningsReducer(
   state = initialState.cleanings,
   action = {}
@@ -59,6 +65,31 @@ export default function cleaningsReducer(
       };
     case CLEAR_CURRENT_CLEANING_JOB:
       return { ...state, currentCleaningJob: null };
+    case UPDATE_CLEANING_JOB:
+      return {
+        ...state,
+        isUpdating: true,
+      };
+    case UPDATE_CLEANING_JOB_SUCCESS:
+      return {
+        ...state,
+        isUpdating: false,
+        error: null,
+        currentCleaningJob: {
+          ...state.currentCleaningJob,
+          ...Object.keys(action.data).reduce((acc, key) => {
+            // prevent overwriting owner
+            if (key !== "owner") acc[key] = action.data[key];
+            return acc;
+          }, {}),
+        },
+      };
+    case UPDATE_CLEANING_JOB_FAILURE:
+      return {
+        ...state,
+        isUpdating: false,
+        error: action.error,
+      };
     default:
       return state;
   }
@@ -95,6 +126,22 @@ Actions.fetchCleaningJobById = ({ cleaning_id }) => {
     },
     options: {
       data: {},
+      params: {},
+    },
+  });
+};
+
+Actions.updateCleaningJob = ({ cleaning_id, cleaning_update }) => {
+  return apiClient({
+    url: `/cleanings/${cleaning_id}`,
+    method: "PUT",
+    types: {
+      REQUEST: UPDATE_CLEANING_JOB,
+      SUCCESS: UPDATE_CLEANING_JOB_SUCCESS,
+      FAILURE: UPDATE_CLEANING_JOB_FAILURE,
+    },
+    options: {
+      data: { cleaning_update },
       params: {},
     },
   });

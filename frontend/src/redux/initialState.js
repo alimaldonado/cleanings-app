@@ -7,6 +7,7 @@ export default {
   },
   cleanings: {
     isLoading: false,
+    isUpdating: false,
     error: false,
     data: {},
     currentCleaningJob: null,
