@@ -1,10 +1,10 @@
-from typing import List
-
-from fastapi import HTTPException, status
-from asyncpg.exceptions import UniqueViolationError
+from typing import List, Union
+from databases.core import Database
 
 from app.db.repositories.base import BaseRepository
-from app.models.offer import OfferCreate, OfferUpdate, OfferInDB
+from app.db.repositories.users import UsersRepository
+
+from app.models.offer import OfferCreate, OfferPublic, OfferUpdate, OfferInDB
 from app.models.cleaning import CleaningInDB
 from app.models.user import UserInDB
 
@@ -70,6 +70,10 @@ MARK_AS_COMPLETED_QUERY = """
 
 
 class OffersRepository(BaseRepository):
+    def __init__(self, db: Database) -> None:
+        super().__init__(db)
+        self.users_repo = UsersRepository(db)
+
     async def create_offer_for_cleaning(self, *, new_offer: OfferCreate) -> OfferInDB:
         created_offer = await self.db.fetch_one(
             query=CREATE_OFFER_FOR_CLEANING_QUERY,
@@ -77,12 +81,19 @@ class OffersRepository(BaseRepository):
         )
         return OfferInDB(**created_offer)
 
-    async def list_offers_for_cleaning(self, *, cleaning: CleaningInDB) -> List[OfferInDB]:
-        offers = await self.db.fetch_all(
+    async def list_offers_for_cleaning(
+        self, *, cleaning: CleaningInDB, populate: bool = True
+    ) -> List[Union[OfferInDB, OfferPublic]]:
+        offer_records = await self.db.fetch_all(
             query=LIST_OFFERS_FOR_CLEANING_QUERY,
             values={"cleaning_id": cleaning.id}
         )
-        return [OfferInDB(**o) for o in offers]
+        offers = [OfferInDB(**o) for o in offer_records]
+
+        if populate:
+            return [await self.populate_offer(offer=offer) for offer in offers]
+
+        return offers
 
     async def get_offer_for_cleaning_from_user(self, *, cleaning: CleaningInDB, user: UserInDB) -> OfferInDB:
         offer_record = await self.db.fetch_one(
@@ -143,4 +154,12 @@ class OffersRepository(BaseRepository):
                 "cleaning_id": cleaning.id,
                 "user_id": cleaner.id
             }
+        )
+
+    async def populate_offer(self, *, offer: OfferInDB) -> OfferPublic:
+        return OfferPublic(
+            **offer.dict(),
+            user=await self.users_repo.get_user_by_id(
+                user_id=offer.user_id
+            )
         )

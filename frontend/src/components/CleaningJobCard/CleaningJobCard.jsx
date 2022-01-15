@@ -37,7 +37,8 @@ const CleaningJobCard = ({
   createOfferForCleaning,
 }) => {
   const userOfferForCleaningJob = useSelector(
-    (state) => state.offers.data?.[cleaningJob?.id]?.[user?.id],
+    (state) =>
+    state.offers.data?.[cleaningJob?.id]?.[user?.id],
     shallowEqual
   );
 

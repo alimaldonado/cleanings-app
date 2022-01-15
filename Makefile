@@ -6,7 +6,7 @@ DOCKER_BE = $(shell  docker ps --filter "name=phresh_server" -q)
 UID = $(shell id -u)
 
 build: ## Rebuilds all the containers
-	U_ID=${UID} docker-compose build
+	U_ID=${UID} docker-compose up --build
 
 run: ## Start the containers
 	U_ID=${UID} docker-compose up -d
