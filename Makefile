@@ -20,6 +20,9 @@ stop: ## Stop the containers
 ssh-be: ## ssh's into the be container
 	U_ID=${UID} docker exec -it ${DOCKER_BE} bash
 
+db-login: # logs into the PostreSQL server
+	U_ID=${UID} docker-compose exec db psql -h localhost -U postgres --dbname=postgres
+
 upgrade-db: ## runs migrations, use with precaution
 	U_ID=${UID} docker exec -it ${DOCKER_BE} alembic upgrade head
 

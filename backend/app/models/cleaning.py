@@ -11,7 +11,7 @@ class CleaningType(str, Enum):
     full_clean = "full_clean"
 
 
-class cleaningBase(CoreModel):
+class CleaningBase(CoreModel):
     """
     All common characteristics of our cleaning resource
     """
@@ -21,21 +21,21 @@ class cleaningBase(CoreModel):
     cleaning_type: Optional[CleaningType] = "spot_clean"
 
 
-class CleaningCreate(cleaningBase):
+class CleaningCreate(CleaningBase):
     name: str
     price: float
 
 
-class CleaningUpdate(cleaningBase):
+class CleaningUpdate(CleaningBase):
     cleaning_type: Optional[CleaningType]
 
 
-class CleaningInDB(IDModelMixin, cleaningBase):
+class CleaningInDB(IDModelMixin, CleaningBase, DateTimeModelMixin):
     name: str
     price: float
     cleaning_type: CleaningType
     owner: str
 
 
-class CleaningPublic(IDModelMixin, cleaningBase):
+class CleaningPublic(IDModelMixin, CleaningBase):
     owner: Union[str, UserPublic]

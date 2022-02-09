@@ -111,8 +111,8 @@ const Navbar = ({ user, logUserOut, ...props }) => {
             <EuiHeaderLink iconType="tear" href="#">
               Find Cleaners
             </EuiHeaderLink>
-            <EuiHeaderLink iconType="tag" href="#">
-              Find Jobs
+            <EuiHeaderLink iconType="tag">
+              <Link to={"/cleaning-jobs"}>Find Jobs</Link>
             </EuiHeaderLink>
             <EuiHeaderLink iconType="help" href="#">
               Help
