@@ -350,3 +350,4 @@ async def test_list_of_new_and_updated_cleanings(db: Database, test_user_list: L
             )
             new_cleanings[i] = updated_cleaning
     return new_cleanings
+
