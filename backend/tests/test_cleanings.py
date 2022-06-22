@@ -5,7 +5,6 @@ import uuid
 from httpx import AsyncClient
 from fastapi import FastAPI, status
 from databases import Database
-from sqlalchemy.sql.visitors import traverse
 from app.db.repositories.cleanings import CleaningsRepository
 from app.models.cleaning import CleaningCreate, CleaningInDB, CleaningPublic
 from app.models.user import UserInDB
@@ -148,17 +147,6 @@ class TestGetcleaning:
 
         assert response.status_code == status_code
 
-    # async def test_get_all_cleanings_returns_valid_response(
-    #     self, app: FastAPI, client: AsyncClient, test_cleaning: CleaningInDB
-    # ) -> None:
-    #     res = await client.get(app.url_path_for("cleanings:get-all-cleanings"))
-    #     print(res.json())
-    #     assert res.status_code == status.HTTP_200_OK
-    #     assert isinstance(res.json(), list)
-    #     assert len(res.json()) > 0
-    #     cleanings = [CleaningInDB(**l) for l in res.json()]
-    #     assert test_cleaning in cleanings
-
     async def test_get_all_cleanings_returns_only_user_owned_cleanings(
         self,
         app: FastAPI,
@@ -234,7 +222,7 @@ class TestUpdatecleaning:
             assert attr_to_change != getattr(test_cleaning, attrs_to_change[i])
             assert attr_to_change == values[i]
         # make sure that no other attributes' values have changed
-        for attr, value in updated_cleaning.dict().items():
+        for attr, value in updated_cleaning.dict(exclude={"created_at", "updated_at"}).items():
             if attr not in attrs_to_change:
                 assert getattr(test_cleaning, attr) == value
 

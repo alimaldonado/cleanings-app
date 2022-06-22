@@ -1,7 +1,7 @@
 #!/bin/bash
 
 OS := $(shell uname)
-DOCKER_BE = $(shell  docker ps --filter "name=phresh-server-1" -q)
+DOCKER_BE = $(shell  docker ps --filter "name=phresh_server" -q)
 
 UID = $(shell id -u)
 
