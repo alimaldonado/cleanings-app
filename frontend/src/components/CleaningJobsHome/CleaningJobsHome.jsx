@@ -2,6 +2,8 @@ import React from "react";
 import { connect } from "react-redux";
 import {
   EuiPage,
+  EuiIcon,
+  EuiAccordion,
   EuiPageBody,
   EuiPageContent,
   EuiPageContentBody,

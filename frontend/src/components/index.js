@@ -1,6 +1,7 @@
 export { default as App } from "./App/App";
 export { default as Carousel } from "./Carousel/Carousel";
 export { default as CarouselTitle } from "./CarouselTitle/CarouselTitle";
+export { default as CleaningActivityFeed } from "./CleaningActivityFeed/CleaningActivityFeed";
 export { default as CleaningJobCard } from "./CleaningJobCard/CleaningJobCard";
 export { default as CleaningJobCreateForm } from "./CleaningJobCreateForm/CleaningJobCreateForm";
 export { default as CleaningJobEditForm } from "./CleaningJobEditForm/CleaningJobEditForm";
