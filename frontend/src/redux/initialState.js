@@ -18,4 +18,10 @@ export default {
     error: false,
     data: {},
   },
+  feed: {
+    isLoading: false,
+    error: null,
+    data: {},
+    hasNext: {},
+  },
 };

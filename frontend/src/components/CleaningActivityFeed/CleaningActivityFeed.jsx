@@ -1,124 +1,139 @@
 import {
-  EuiAvatar,
   EuiBadge,
+  EuiButton,
   EuiButtonIcon,
   EuiCommentList,
   EuiFlexGroup,
   EuiFlexItem,
+  EuiLoadingSpinner,
+  EuiMarkdownFormat,
   EuiText,
 } from "@elastic/eui";
+import { UseAvatar } from "components";
+import { useCleaningFeed } from "hooks/useCleaningFeed";
+import moment from "moment";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { formatPrice, truncate } from "utils/format";
 
 const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  max-width: 800px;
+  margin: 2rem auto;
 `;
 
-const body = (
+const DescriptionWrapper = styled.div`
+  margin=bottom: 1rem;
+`;
+
+const cleaningTypeToDisplayNameMapping = {
+  dust_up: "Dust Up",
+  spot_clean: "Spot Clean",
+  full_clean: "Full Clean",
+};
+
+const renderFeedItemBody = (feedItem) => (
   <EuiText size="s">
+    <h3>{feedItem.name}</h3>
+
+    <DescriptionWrapper>
+      <EuiMarkdownFormat>
+        {truncate(feedItem.description, 300, true)}
+      </EuiMarkdownFormat>
+    </DescriptionWrapper>
     <p>
-      Lorem ipsum dolor sit amet consectetur, adipisicing elit. Non officiis
-      porro esse eaque iste officia mollitia error magnam ipsam ipsum!
+      Rate: <strong>{formatPrice(feedItem.price)}</strong>
     </p>
   </EuiText>
 );
 
-const copyAction = (
+const renderUpdateEvent = (feedItem) => (
+  <EuiFlexGroup responsive={false} alignItems="center" gutterSize="s">
+    <EuiFlexItem grow={false}>
+      <span>
+        updated <strong>{feedItem.name}</strong>
+      </span>
+    </EuiFlexItem>
+    <EuiFlexItem grow={false}>
+      <EuiBadge className="hide-mobile" color="primary">
+        {cleaningTypeToDisplayNameMapping[feedItem.cleaningType]}
+      </EuiBadge>
+    </EuiFlexItem>
+    <EuiFlexItem grow={false}>
+      <EuiBadge className="hide-mobile" color="secondary">
+        {formatPrice(feedItem.price)}
+      </EuiBadge>
+    </EuiFlexItem>
+  </EuiFlexGroup>
+);
+
+const renderFeedItemAction = (feedItem, navigate) => (
   <EuiButtonIcon
-    title="Custom Action"
-    aria-label="Custom Action"
+    title="Navigate to cleaning job"
+    aria-label="Navigate to cleaning job"
     color="subdued"
-    iconType="copy"
+    iconType="popout"
+    onClick={() => navigate(`/cleaning-jobs/${feedItem.id}`)}
   />
 );
 
-const complexEvent = (
-  <EuiFlexGroup responsive={false} alignItems="center" gutterSize="s">
-    <EuiFlexItem grow={false}>added tags</EuiFlexItem>
-    <EuiFlexItem grow={false}>
-      <EuiBadge color="primary">sample</EuiBadge>
-    </EuiFlexItem>
-    <EuiFlexItem grow={false}>
-      <EuiBadge color="secondary">review</EuiBadge>
-    </EuiFlexItem>
-  </EuiFlexGroup>
+const renderTimelineIcon = (feedItem) => (
+  <UseAvatar user={feedItem.owner} size="l" />
 );
 
-const complexUsername = (
-  <EuiFlexGroup responsive={false} alignItems="center" gutterSize="s">
-    <EuiFlexItem grow={false}>
-      <EuiAvatar size="s" type="space" name="Pedro" />
-    </EuiFlexItem>
-    <EuiFlexItem grow={false}>pedror</EuiFlexItem>
-  </EuiFlexGroup>
-);
+const renderTimestamp = (feedItem) =>
+  `on ${moment(feedItem.createdAt).format("MMM Do, YYYY")}`;
 
-const longBody = (
-  <EuiText size="s">
-    <p>
-      Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure qui
-      consequuntur cumque nihil soluta dolorem quas sint temporibus, ab debitis
-      veritatis, ad nulla! Inventore quasi minima nam? Cum voluptatum provident
-      aspernatur, sed suscipit consequatur ab quaerat dolores, natus doloribus
-      amet impedit dolorem assumenda praesentium consectetur? Odio earum
-      eligendi laborum id.
-    </p>
-  </EuiText>
-);
+const createUiElementFromFeedItem = (feedItem, navigate) => {
+  const isCreateEvent = feedItem["event_type"] === "is_create";
 
-const avatar = (
-  <EuiAvatar
-    imageUrl="https://source.unsplash.com/64x64/?woman"
-    size="l"
-    name="Juana"
-  />
-);
-
-const comments = [
-  {
-    username: "janed",
-    event: "added a comment",
-    timestamp: "on Jan 1, 2020",
-    children: body,
-    actions: copyAction,
-  },
-  {
-    username: "juanab",
-    type: "update",
-    actions: copyAction,
-    event: "pushed incident X0Z235",
-    timestamp: "on Jan 3, 2020",
-    timelineIcon: avatar,
-  },
-  {
-    username: "pancho1",
-    type: "update",
-    event: "edited case",
-    timestamp: "on Jan 9, 2020",
-  },
-  {
-    username: complexUsername,
-    type: "update",
-    actions: copyAction,
-    event: complexEvent,
-    timestamp: "on Jan 11, 2020",
-    timelineIcon: "tag",
-  },
-  {
-    username: "elohar",
-    event: "added a comment",
-    timestamp: "on Jan 14, 2020",
-    timelineIcon: <EuiAvatar size="l" name="Eloha" />,
-    children: longBody,
-    actions: copyAction,
-  },
-];
+  return {
+    username: feedItem.owner?.username,
+    timestamp: renderTimestamp(feedItem),
+    actions: renderFeedItemAction(feedItem, navigate),
+    event: isCreateEvent ? "created a new job" : renderUpdateEvent(feedItem),
+    type: isCreateEvent ? "regular" : "update",
+    timelineIcon: isCreateEvent ? renderTimelineIcon(feedItem) : null,
+    children: isCreateEvent ? renderFeedItemBody(feedItem) : null,
+  };
+};
 
 const CleaningActivityFeed = () => {
+  const navigate = useNavigate();
+  const { hasNext, isLoading, feedItems, fetchFeedItems } = useCleaningFeed();
+
+  const feedItemElements = React.useMemo(
+    () =>
+      feedItems
+        ? feedItems.map((feedItem) =>
+            createUiElementFromFeedItem(feedItem, navigate)
+          )
+        : [],
+    [feedItems, navigate]
+  );
+
+  const handleLoadMore = () => {
+    const startingDate = feedItems[feedItems.length - 1].event_timestamp;
+
+    fetchFeedItems(startingDate);
+  };
+
+  const renderHasNextButton = () => {
+    return hasNext ? (
+      <EuiButton onClick={handleLoadMore}>Load More</EuiButton>
+    ) : (
+      <EuiButton onClick={() => {}} isLoading={false} isDisabled={true}>
+        {isLoading ? "Loading..." : "Nothing else here, yet..."}
+      </EuiButton>
+    );
+  };
+
   return (
     <Wrapper>
-      <EuiCommentList comments={comments} />
+      <EuiCommentList comments={feedItemElements} />
+      {isLoading ? <EuiLoadingSpinner size="xl" /> : null}
+      {renderHasNextButton()}
     </Wrapper>
   );
 };

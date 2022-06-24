@@ -1,7 +1,7 @@
 #!/bin/bash
 
 OS := $(shell uname)
-DOCKER_BE = $(shell  docker ps --filter "name=cleanings-app_server_1" -q)
+DOCKER_BE = $(shell  docker ps --filter "name=cleanings-app-server-1" -q)
 
 UID = $(shell id -u)
 
