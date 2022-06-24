@@ -2,6 +2,7 @@ import {
   EuiAvatar,
   EuiBadge,
   EuiButtonIcon,
+  EuiCommentList,
   EuiFlexGroup,
   EuiFlexItem,
   EuiText,

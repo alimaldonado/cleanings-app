@@ -1,12 +1,12 @@
 #!/bin/bash
 
 OS := $(shell uname)
-DOCKER_BE = $(shell  docker ps --filter "name=phresh_server" -q)
+DOCKER_BE = $(shell  docker ps --filter "name=cleanings-app_server_1" -q)
 
 UID = $(shell id -u)
 
 build: ## Rebuilds all the containers
-	U_ID=${UID} docker-compose up --build
+	U_ID=${UID} docker-compose up --build -d
 
 run: ## Start the containers
 	U_ID=${UID} docker-compose up -d
