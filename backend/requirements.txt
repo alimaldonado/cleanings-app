@@ -12,7 +12,7 @@ alembic==1.4.2
 psycopg2-binary==2.8.6
 # auth
 pyjwt==2.0.1
-passlib[bcrypt]==1.7.2
+passlib[bcrypt]==1.7.4
 
 # dev
 pytest==6.2.2
