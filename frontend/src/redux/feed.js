@@ -42,8 +42,8 @@ export default function feedReducer(state = initialState.feed, action = {}) {
         hasNext: {
           ...state.hasNext,
           [action.feed]: action.hasNext,
-        }
-      }
+        },
+      };
     default:
       return state;
   }
@@ -56,29 +56,31 @@ Actions.fetchCleaningFeedItems = (
   page_chunk_size = 20
 ) => {
   return (dispatch) => {
-    apiClient({
-      url: "/feed/cleanings/",
-      method: "GET",
-      types: {
-        REQUEST: FETCH_CLEANING_FEED_ITEMS,
-        FAILURE: FETCH_CLEANING_FEED_ITEMS_FAILURE,
-        SUCCESS: FETCH_CLEANING_FEED_ITEMS_SUCCESS,
-      },
-      options: {
-        data: {},
-        params: {
-          starting_date: moment(starting_date).format(),
-          page_chunk_size,
+    return dispatch(
+      apiClient({
+        url: `/feed/cleanings/`,
+        method: `GET`,
+        types: {
+          REQUEST: FETCH_CLEANING_FEED_ITEMS,
+          SUCCESS: FETCH_CLEANING_FEED_ITEMS_SUCCESS,
+          FAILURE: FETCH_CLEANING_FEED_ITEMS_FAILURE,
         },
-      },
-      onSuccess: (response) => {
-        dispatch({
-          type: SET_HAS_NEXT_FOR_FEED,
-          feed: "cleaning",
-          hasNext:  Boolean(response?.data?.length === page_chunk_size),
-        })
-        return { succes: true, status: response.status, data: response.data };
-      },
-    });
+        options: {
+          data: {},
+          params: {
+            starting_date: moment(starting_date).format(),
+            page_chunk_size,
+          },
+        },
+        onSuccess: (res) => {
+          dispatch({
+            type: SET_HAS_NEXT_FOR_FEED,
+            feed: "cleaning",
+            hasNext: Boolean(res?.data?.length === page_chunk_size),
+          });
+          return { success: true, status: res.status, data: res.data };
+        },
+      })
+    );
   };
 };

@@ -57,11 +57,11 @@ const renderUpdateEvent = (feedItem) => (
     </EuiFlexItem>
     <EuiFlexItem grow={false}>
       <EuiBadge className="hide-mobile" color="primary">
-        {cleaningTypeToDisplayNameMapping[feedItem.cleaningType]}
+        {cleaningTypeToDisplayNameMapping[feedItem.cleaning_type]}
       </EuiBadge>
     </EuiFlexItem>
     <EuiFlexItem grow={false}>
-      <EuiBadge className="hide-mobile" color="secondary">
+      <EuiBadge className="hide-mobile" color="accent">
         {formatPrice(feedItem.price)}
       </EuiBadge>
     </EuiFlexItem>

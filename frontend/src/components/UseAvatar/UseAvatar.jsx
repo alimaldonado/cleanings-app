@@ -15,7 +15,6 @@ export default function UseAvatar({
       imageUrl={user?.profile?.image}
       initialsLength={initialsLength}
       type={type}
-      color={color}
     />
   );
 }
