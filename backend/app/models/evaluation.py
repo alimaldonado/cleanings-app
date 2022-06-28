@@ -18,7 +18,7 @@ class EvaluationBase(CoreModel):
 
 
 class EvaluationCreate(EvaluationBase):
-    overall_rating: conint(ge=0, le=5)
+    overall_rating: conint(ge=1, le=5)
 
 
 class EvaluationUpdate(EvaluationBase):

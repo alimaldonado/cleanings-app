@@ -161,7 +161,7 @@ Though the cleaner took their time, I would definitely hire them again for the q
 
 
 class TestGetEvaluations:
-    async def test_authenticated_user_can_eget_evaluation_for_cleaning(
+    async def test_authenticated_user_can_get_evaluation_for_cleaning(
         self,
         app: FastAPI,
         create_authorized_client: Callable,

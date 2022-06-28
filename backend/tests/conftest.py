@@ -311,10 +311,10 @@ async def test_list_of_cleanings_with_evaluated_offer(
 
             ),
             eval_create=EvaluationCreate(
-                professionalism=random.randint(0, 5),
-                completeness=random.randint(0, 5),
-                efficiency=random.randint(0, 5),
-                overall_rating=random.randint(0, 5),
+                professionalism=random.randint(1,5),
+                completeness=random.randint(1,5),
+                efficiency=random.randint(1,5),
+                overall_rating=random.randint(1,5),
                 headline=f"test headline - {i}",
                 comment=f"test comment - {i}",
 
