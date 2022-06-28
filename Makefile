@@ -1,9 +1,15 @@
 #!/bin/bash
 
 OS := $(shell uname)
-DOCKER_BE = $(shell  docker ps --filter "name=cleanings-app-server-1" -q)
+DOCKER_BE = $(shell  docker ps --filter "name=fastapi-cleanings-server" -q)
 
 UID = $(shell id -u)
+
+help: ## Show this help message
+	@echo 'usage: make [target]'
+	@echo
+	@echo 'targets:'
+	@egrep '^(.+)\:\ ##\ (.+)' ${MAKEFILE_LIST} | column -t -c 2 -s ':#'
 
 build: ## Rebuilds all the containers
 	U_ID=${UID} docker-compose up --build -d
@@ -38,8 +44,3 @@ tests: # Runs existent tests
 pep: # Runs PEP8 Style standards
 	U_ID=${UID} autopep8 . --recursive --in-place --pep8-passes 2000 --verbose
 
-help: ## Show this help message
-	@echo 'usage: make [target]'
-	@echo
-	@echo 'targets:'
-	@egrep '^(.+)\:\ ##\ (.+)' ${MAKEFILE_LIST} | column -t -c 2 -s ':#'
