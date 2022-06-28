@@ -11,6 +11,7 @@ export default {
     error: false,
     data: {},
     currentCleaningJob: null,
+    activeCleaningId: null,
   },
   offers: {
     isLoading: false,

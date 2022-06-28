@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { connect } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Actions as cleaningActions } from "../../redux/cleanings";
@@ -10,93 +10,25 @@ import {
   EuiFieldNumber,
   EuiSuperSelect,
   EuiSpacer,
-  EuiText,
   EuiTextArea,
 } from "@elastic/eui";
-import validation from "../../utils/validation";
-import { extractErrorMessages } from "../../utils/errors";
+import { useCleaningJobForm } from "hooks/ui/useCleaningJobForm";
 
-const cleaningTypeOptions = [
-  {
-    value: "dust_up",
-    inputDisplay: "Dust Up",
-    dropdownDisplay: (
-      <React.Fragment>
-        <strong>Dust Up</strong>
-        <EuiText size="s" color="subdued">
-          <p className="euiTextColor--subdued">
-            {`A minimal clean job. Dust shelves and mantels, tidy rooms, and sweep floors.`}
-          </p>
-        </EuiText>
-      </React.Fragment>
-    ),
-  },
-  {
-    value: "spot_clean",
-    inputDisplay: "Spot Clean",
-    dropdownDisplay: (
-      <React.Fragment>
-        <strong>Spot Clean</strong>
-        <EuiText size="s" color="subdued">
-          <p className="euiTextColor--subdued">
-            {`A standard clean job. Vacuum all indoor spaces, sanitize surfaces, and disinfect
-              targeted areas. Bathrooms, tubs, and toilets can be added on for an additional charge.`}
-          </p>
-        </EuiText>
-      </React.Fragment>
-    ),
-  },
-  {
-    value: "full_clean",
-    inputDisplay: "Deep Clean",
-    dropdownDisplay: (
-      <React.Fragment>
-        <strong>Deep Clean</strong>
-        <EuiText size="s" color="subdued">
-          <p className="euiTextColor--subdued">
-            {`A complete clean job. Mop tile floors, scrub out tough spots, and a guaranteed clean
-              residence upon completion. Dishes, pots, and pans included in this package.`}
-          </p>
-        </EuiText>
-      </React.Fragment>
-    ),
-  },
-];
-
-const CleaningJobEditForm = ({
-  cleaningJob,
-  cleaningError,
-  isUpdating,
-  updateCleaning,
-}) => {
-  const { name, description, price, cleaning_type } = cleaningJob;
-  const [form, setForm] = useState({
-    name,
-    description,
-    price,
-    cleaning_type,
-  });
-
-  const [errors, setErrors] = useState({});
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+const CleaningJobEditForm = ({ cleaningId, updateCleaning }) => {
   const navigate = useNavigate();
-  const cleaningErrorList = extractErrorMessages(cleaningError);
 
-  const validateInput = (label, value) => {
-    // grab validation function and run it on input if it exists
-    // if it doesn't exists, just assume the input is valid
-    const isValid = validation?.[label] ? validation?.[label]?.(value) : true;
-    setErrors((errors) => ({ ...errors, [label]: !isValid }));
-  };
-
-  const onInputChange = (label, value) => {
-    validateInput(label, value);
-    setForm((state) => ({ ...state, [label]: value }));
-  };
-
-  const onCleaningTypeChange = (cleaning_type) => {
-    setForm((state) => ({ ...state, cleaning_type }));
-  };
+  const {
+    form,
+    errors,
+    setErrors,
+    isUpdating,
+    getFormErrors,
+    validateInput,
+    onCleaningTypeChange,
+    setHasSubmitted,
+    onInputChange,
+    cleaningTypeOptions,
+  } = useCleaningJobForm(cleaningId);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,25 +45,13 @@ const CleaningJobEditForm = ({
     setHasSubmitted(true);
 
     const response = await updateCleaning({
-      cleaning_id: cleaningJob.id,
-      cleaning_update: { ...form },
+      cleaningId,
+      cleaningUpdate: { ...form },
     });
 
     if (response?.success) {
-      const cleaningId = response.data?.id;
-
       navigate(`/cleaning-jobs/${cleaningId}`);
     }
-  };
-  const getFormErrors = () => {
-    const formErrors = [];
-    if (errors.form) {
-      formErrors.push(errors.form);
-    }
-    if (hasSubmitted && cleaningErrorList.length) {
-      return formErrors.concat(cleaningErrorList);
-    }
-    return formErrors;
   };
 
   return (
@@ -198,19 +118,13 @@ const CleaningJobEditForm = ({
           iconType={"save"}
           iconSide="right"
         >
-          Edit
+          Update Cleaning
         </EuiButton>
       </EuiForm>
     </>
   );
 };
 
-export default connect(
-  (state) => ({
-    cleaningError: state.cleanings.error,
-    isUpdating: state.cleanings.isUpdating,
-  }),
-  {
-    updateCleaning: cleaningActions.updateCleaningJob,
-  }
-)(CleaningJobEditForm);
+export default connect(null, {
+  updateCleaning: cleaningActions.updateCleaningJob,
+})(CleaningJobEditForm);
