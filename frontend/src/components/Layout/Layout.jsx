@@ -3,10 +3,12 @@ import { Helmet } from "react-helmet";
 import styled, { ThemeProvider } from "styled-components";
 import euiVars from "@elastic/eui/dist/eui_theme_light.json";
 import "@elastic/eui/dist/eui_theme_light.css";
-import "../../assets/css/fonts.css";
-import "../../assets/css/override.css";
+import "assets/css/fonts.css";
+import "assets/css/override.css";
 
-import { Navbar } from "../../components";
+import { Navbar } from "components";
+import { useToasts } from "hooks/ui/useToasts";
+import { EuiGlobalToastList } from "@elastic/eui";
 
 const customTheme = {
   ...euiVars,
@@ -32,6 +34,8 @@ const StyledMain = styled.main`
 `;
 
 const Layout = ({ children }) => {
+  const { toasts, removeToast } = useToasts();
+
   return (
     <React.Fragment>
       <Helmet>
@@ -41,8 +45,15 @@ const Layout = ({ children }) => {
       </Helmet>
       <ThemeProvider theme={customTheme}>
         <StyledLayout>
-          <Navbar></Navbar>
+          <Navbar />
           <StyledMain>{children}</StyledMain>
+          <EuiGlobalToastList
+            toasts={toasts}
+            dismissToast={(toast) => removeToast(toast)}
+            toastLifeTimeMs={15000}
+            side="right"
+            className="auth-toast-list"
+          />
         </StyledLayout>
       </ThemeProvider>
     </React.Fragment>

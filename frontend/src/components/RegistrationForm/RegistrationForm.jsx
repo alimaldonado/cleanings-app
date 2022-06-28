@@ -11,15 +11,13 @@ import {
   htmlIdGenerator,
 } from "@elastic/eui";
 import { Link } from "react-router-dom";
-import validation from "../../utils/validation";
 import styled from "styled-components";
-import { extractErrorMessages } from "../../utils/errors";
 
 import {
   Actions as authActions,
   FETCHING_USER_FROM_TOKEN_SUCCESS,
 } from "../../redux/auth";
-import { useNavigate } from "react-router-dom";
+import { useLoginAndRegistrationForm } from "hooks/ui/useLoginAndRegistrationForm";
 
 const RegistrationFormWrapper = styled.div`
   padding: 2rem;
@@ -30,60 +28,22 @@ const NeedAccountLink = styled.span`
 `;
 
 const RegistrationForm = ({
-  authError,
-  user,
-  isLoading,
-  isAuthenticated,
   registerUser,
 }) => {
-  const [form, setForm] = React.useState({
-    username: "",
-    email: "",
-    password: "",
-    passwordConfirm: "",
-  });
-
-  const [agreedToTerms, setAgreedToTerms] = React.useState(false);
-  const [errors, setErrors] = React.useState({});
-  const [hasSubmitted, setHasSubmitted] = React.useState(false);
-
-  const navigate = useNavigate();
-  const authErrorList = extractErrorMessages(authError);
-
-  React.useEffect(() => {
-    if (user?.email && isAuthenticated) {
-      navigate("/profile");
-    }
-  }, [user, navigate, isAuthenticated]);
-
-  const validateInput = (label, value) => {
-    // grab validation function and run it on input if it exists
-    // if it doesn't exists, just assume the input is valid
-    const isValid = validation?.[label] ? validation?.[label]?.(value) : true;
-
-    // set an error if the validation did not return true
-    setErrors((errors) => ({ ...errors, [label]: !isValid }));
-  };
-
-  const setAgreedToTermsCheckbox = (e) => {
-    setAgreedToTerms(e.target.checked);
-  };
-
-  const handleInputChange = (label, value) => {
-    validateInput(label, value);
-    setForm((form) => ({ ...form, [label]: value }));
-  };
-
-  const handlePasswordConfirmChange = (value) => {
-    setErrors((errors) => ({
-      ...errors,
-      passwordConfirm:
-        form.password !== value ? `Passwords do not match` : null,
-    }));
-
-    setForm((form) => ({ ...form, passwordConfirm: value }));
-  };
-
+  const {
+    form,
+    setForm,
+    errors,
+    setErrors,
+    isLoading,
+    getFormErrors,
+    setHasSubmitted,
+    handleInputChange,
+    validateInput,
+    agreedToTerms,
+    setAgreedToTerms,
+    handlePasswordConfirmChange,
+  } = useLoginAndRegistrationForm({ isLogin: false })
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -126,17 +86,6 @@ const RegistrationForm = ({
     if (action?.type !== FETCHING_USER_FROM_TOKEN_SUCCESS) {
       setForm((form) => ({ ...form, password: "", passwordConfirm: "" }));
     }
-  };
-
-  const getFormErrors = () => {
-    const formErrors = [];
-    if (errors.form) {
-      formErrors.push(errors.form);
-    }
-    if (hasSubmitted && authErrorList.length) {
-      return formErrors.concat(authErrorList);
-    }
-    return formErrors;
   };
 
   return (
@@ -215,7 +164,7 @@ const RegistrationForm = ({
           id={htmlIdGenerator()()}
           label="I agree to the terms and conditions."
           checked={agreedToTerms}
-          onChange={(e) => setAgreedToTermsCheckbox(e)}
+          onChange={(e) => setAgreedToTerms(e)}
         />
         <EuiSpacer />
 

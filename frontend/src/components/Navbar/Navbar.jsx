@@ -1,6 +1,4 @@
-import React from "react";
-import { connect } from "react-redux";
-import { Actions as authActions } from "../../redux/auth";
+import React, { useState } from "react";
 import {
   EuiAvatar,
   EuiIcon,
@@ -19,6 +17,8 @@ import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import loginIcon from "../../assets/img/loginIcon.svg";
+import { useAuthenticatedUser } from "hooks/auth/useAuthenticatedUser";
+import { UseAvatar } from "components";
 
 const LogoSection = styled(EuiHeaderLink)`
   padding: 0 2rem;
@@ -34,8 +34,9 @@ const AvatarMenu = styled.div`
   }
 `;
 
-const Navbar = ({ user, logUserOut, ...props }) => {
-  const [avatarMenuOpen, setAvatarMenuOpen] = React.useState(false);
+const Navbar = ({ ...props }) => {
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const { user, logUserOut } = useAuthenticatedUser();
   const navigate = useNavigate();
 
   const toggleAvatarMenu = () => setAvatarMenuOpen(!avatarMenuOpen);
@@ -53,12 +54,7 @@ const Navbar = ({ user, logUserOut, ...props }) => {
       onClick={() => user?.profile && toggleAvatarMenu()}
     >
       {user?.profile ? (
-        <EuiAvatar
-          size="l"
-          name={user.profile.full_name || user.username || "Anonymous"}
-          initialsLength={2}
-          imageUrl={user.profile.image}
-        />
+        <UseAvatar size="l" user={user} initialsLength={2} />
       ) : (
         <Link to="/login">
           <EuiAvatar size="l" name="user" imageUrl={loginIcon} />
@@ -72,12 +68,7 @@ const Navbar = ({ user, logUserOut, ...props }) => {
 
     return (
       <AvatarMenu>
-        <EuiAvatar
-          size="xl"
-          name={user.profile.full_name || "Anonymous"}
-          initialsLength={2}
-          imageUrl={user.profile.image}
-        />
+        <UseAvatar size="xl" user={user} initialsLength="2" />
         <EuiFlexGroup direction="column" className="avatar-actions">
           <EuiFlexItem grow={1}>
             <p>
@@ -136,6 +127,4 @@ const Navbar = ({ user, logUserOut, ...props }) => {
   );
 };
 
-export default connect((state) => ({ user: state.auth.user }), {
-  logUserOut: authActions.logUserOut,
-})(Navbar);
+export default Navbar;

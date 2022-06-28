@@ -1,7 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
 import {
-  EuiAvatar,
   EuiHorizontalRule,
   EuiIcon,
   EuiPage,
@@ -16,6 +14,8 @@ import {
 } from "@elastic/eui";
 import moment from "moment";
 import styled from "styled-components";
+import { useAuthenticatedUser } from "hooks/auth/useAuthenticatedUser";
+import { UseAvatar } from "components";
 
 const StyledEuiPage = styled(EuiPage)`
   flex: 1;
@@ -42,7 +42,8 @@ const StyledEuiPageContentBody = styled(EuiPageContentBody)`
   }
 `;
 
-const ProfilePage = ({ user }) => {
+const ProfilePage = () => {
+  const { user } = useAuthenticatedUser();
   return (
     <StyledEuiPage>
       <EuiPageBody component="section">
@@ -55,12 +56,7 @@ const ProfilePage = ({ user }) => {
         </StyledEuiPageHeader>
         <EuiPageContent verticalPosition="center" horizontalPosition="center">
           <StyledEuiPageContentBody>
-            <EuiAvatar
-              size="xl"
-              name={user.profile.full_name || user.username || "Anonymous"}
-              initialsLength={2}
-              imageUrl={user.profile.image}
-            />
+            <UseAvatar size="xl" user={user} initialsLength={2} />
             <EuiTitle size="l">
               <h2>@{user.username}</h2>
             </EuiTitle>
@@ -100,4 +96,4 @@ const ProfilePage = ({ user }) => {
   );
 };
 
-export default connect((state) => ({ user: state.auth.user }))(ProfilePage);
+export default ProfilePage;

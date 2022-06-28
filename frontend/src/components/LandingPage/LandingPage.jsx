@@ -10,18 +10,18 @@ import {
 import styled from "styled-components";
 
 // img
-import heroGirl from "../../assets/img/HeroGirl.svg";
-import dorm from "../../assets/img/Bed.svg";
-import bedroom from "../../assets/img/Bedroom.svg";
-import bathroom from "../../assets/img/Bathroom.svg";
-import livingRoom from "../../assets/img/Living_room_interior.svg";
-import kitchen from "../../assets/img/Kitchen.svg";
-import readingRoom from "../../assets/img/Reading_room.svg";
-import tvRoom from "../../assets/img/TV_room.svg";
+import heroGirl from "assets/img/HeroGirl.svg";
+import dorm from "assets/img/Bed.svg";
+import bedroom from "assets/img/Bedroom.svg";
+import bathroom from "assets/img/Bathroom.svg";
+import livingRoom from "assets/img/Living_room_interior.svg";
+import kitchen from "assets/img/Kitchen.svg";
+import readingRoom from "assets/img/Reading_room.svg";
+import tvRoom from "assets/img/TV_room.svg";
 
 // own components
-import { Carousel, CarouselTitle } from "../../components";
-import useCarousel from "../../hooks/useCarousel";
+import { Carousel, CarouselTitle } from "components";
+import useCarousel from "hooks/ui/useCarousel";
 
 const StyledEuiPage = styled(EuiPage)`
   flex: 1;
