@@ -2,7 +2,7 @@ from typing import Callable, List
 import random
 import warnings
 import os
-import pytest
+import pytest_asyncio
 from asgi_lifespan import LifespanManager
 from fastapi import FastAPI
 from httpx import AsyncClient
@@ -19,7 +19,7 @@ from app.db.repositories.users import UsersRepository
 from app.core.config import SECRET_KEY, JWT_TOKEN_PREFIX
 from app.services import auth_service
 
-from app.models.offer import OfferCreate, OfferUpdate
+from app.models.offer import OfferCreate
 from app.db.repositories.offers import OffersRepository
 
 
@@ -28,8 +28,7 @@ from app.db.repositories.evaluations import EvaluationsRepository
 
 # Apply migrations at beginning and end of testing session
 
-
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 def apply_migrations():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     os.environ["TESTING"] = "1"
@@ -40,20 +39,20 @@ def apply_migrations():
 # Create a new application for testing
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def app(apply_migrations: None) -> FastAPI:
     from app.api.server import get_application
     return get_application()
 # Grab a reference to our database when needed
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def db(app: FastAPI) -> Database:
     return app.state._db
 # Make requests in our tests
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def client(app: FastAPI) -> AsyncClient:
     async with LifespanManager(app):
         async with AsyncClient(
@@ -64,7 +63,7 @@ async def client(app: FastAPI) -> AsyncClient:
             yield client
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_cleaning(db: Database, user_elliot: UserInDB) -> CleaningInDB:
     cleaning_repo = CleaningsRepository(db)
     new_cleaning = CleaningCreate(
@@ -87,7 +86,7 @@ async def user_fixture_helper(*, db: Database, new_user: UserCreate) -> UserInDB
     return await user_repo.register_new_user(new_user=new_user)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def elliots_authorized_client(client: AsyncClient, user_elliot: UserInDB) -> AsyncClient:
     access_token = auth_service.create_access_token_for_user(
         user=user_elliot, secret_key=str(SECRET_KEY))
@@ -100,7 +99,7 @@ def elliots_authorized_client(client: AsyncClient, user_elliot: UserInDB) -> Asy
     return client
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def user_elliot(db: Database) -> UserInDB:
     new_user = UserCreate(
         email="elliot@sample.io",
@@ -111,7 +110,7 @@ async def user_elliot(db: Database) -> UserInDB:
     return await user_fixture_helper(db=db, new_user=new_user)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def user_darlene(db: Database) -> UserInDB:
     new_user = UserCreate(
         email="darlene@sample.com",
@@ -122,7 +121,7 @@ async def user_darlene(db: Database) -> UserInDB:
     return await user_fixture_helper(db=db, new_user=new_user)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def user_mr_robot(db: Database) -> UserInDB:
     new_user = UserCreate(
         email="mr@robot.com",
@@ -133,7 +132,7 @@ async def user_mr_robot(db: Database) -> UserInDB:
     return await user_fixture_helper(db=db, new_user=new_user)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def user_tyrell(db: Database) -> UserInDB:
     new_user = UserCreate(
         email="tyrell@wellick.com",
@@ -144,7 +143,7 @@ async def user_tyrell(db: Database) -> UserInDB:
     return await user_fixture_helper(db=db, new_user=new_user)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def user_angela(db: Database) -> UserInDB:
     new_user = UserCreate(
         email="angela@sample.com",
@@ -155,7 +154,7 @@ async def user_angela(db: Database) -> UserInDB:
     return await user_fixture_helper(db=db, new_user=new_user)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def user_trenton(db: Database) -> UserInDB:
     new_user = UserCreate(
         email="trenton@sample.com",
@@ -166,14 +165,14 @@ async def user_trenton(db: Database) -> UserInDB:
     return await user_fixture_helper(db=db, new_user=new_user)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_user_list(
     user_mr_robot: UserInDB, user_tyrell: UserInDB, user_angela: UserInDB, user_trenton: UserInDB,
 ) -> List[UserInDB]:
     return [user_mr_robot, user_tyrell, user_angela, user_trenton]
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def create_authorized_client(client: AsyncClient) -> Callable:
     def _create_authorized_client(*, user: UserInDB) -> AsyncClient:
         access_token = auth_service.create_access_token_for_user(
@@ -189,7 +188,7 @@ def create_authorized_client(client: AsyncClient) -> Callable:
     return _create_authorized_client
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_cleaning_with_offers(
     db: Database,
     user_darlene: UserInDB,
@@ -217,7 +216,7 @@ async def test_cleaning_with_offers(
     return created_cleaning
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_cleaning_with_accepted_offer(
     db: Database, user_darlene: UserInDB, user_mr_robot: UserInDB,
     test_user_list: List[UserInDB]
@@ -292,7 +291,7 @@ async def create_cleaning_with_evaluated_offer_helper(
     return created_cleaning
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_list_of_cleanings_with_evaluated_offer(
     db: Database,
     user_darlene: UserInDB,
@@ -324,7 +323,7 @@ async def test_list_of_cleanings_with_evaluated_offer(
     ]
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_list_of_new_and_updated_cleanings(db: Database, test_user_list: List[UserInDB]) -> List[CleaningInDB]:
     cleanings_repo = CleaningsRepository(db)
     new_cleanings = [

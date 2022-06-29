@@ -1,8 +1,7 @@
 #!/bin/bash
 
 OS := $(shell uname)
-DOCKER_BE = $(shell  docker ps --filter "name=fastapi-cleanings-server" -q)
-
+DOCKER_BE = fastapi-cleanings-server
 UID = $(shell id -u)
 
 help: ## Show this help message

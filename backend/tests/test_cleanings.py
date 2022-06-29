@@ -1,6 +1,6 @@
-
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union
 import pytest
+import pytest_asyncio
 import uuid
 from httpx import AsyncClient
 from fastapi import FastAPI, status
@@ -14,7 +14,7 @@ pytestmark = pytest.mark.asyncio
 FAKE_ID = str(uuid.uuid4())
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 def new_cleaning():
     return CleaningCreate(
         name="test cleaning",
@@ -24,7 +24,7 @@ def new_cleaning():
     )
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def darlenes_cleanings_list(db: Database, user_darlene: UserInDB) -> List[CleaningInDB]:
     cleaning_repo = CleaningsRepository(db)
 
