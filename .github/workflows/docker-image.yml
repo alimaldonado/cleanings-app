@@ -19,4 +19,4 @@ jobs:
         cp docker-compose.yml.dist docker-compose.yml
         cp ./backend/.env.template ./backend/.env
         docker-compose up --build -d
-        docker exec -it fastapi-cleanings-server pytest -v
+        docker exec fastapi-cleanings-server pytest -v
