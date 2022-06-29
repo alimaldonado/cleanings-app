@@ -72,13 +72,12 @@ class FeedRepository(BaseRepository):
             }
         )
 
-        return [
-            await self.populate_cleaning_feed_item(cleaning_feed_item=cleaning_feed_item)
-            for cleaning_feed_item in cleaning_feed_item_records
-        ]
+        cleaning_feed = [CleaningFeedItem(**f) for f in cleaning_feed_item_records]
 
-    async def populate_cleaning_feed_item(self, *, cleaning_feed_item: Record) -> CleaningFeedItem:
+        return [await self.populate_cleaning_feed_item(cleaning_feed_item=item) for item in cleaning_feed]
+
+    async def populate_cleaning_feed_item(self, *, cleaning_feed_item: CleaningFeedItem) -> CleaningFeedItem:
         return CleaningFeedItem(
-            **{ k: v for k, v in cleaning_feed_item.items() if k != "owner" },
-            owner=await self.users_repo.get_user_by_id(user_id=cleaning_feed_item["owner"])
+            **cleaning_feed_item.dict(exclude={"owner"}),
+            owner=await self.users_repo.get_user_by_id(user_id=cleaning_feed_item.owner)
         )

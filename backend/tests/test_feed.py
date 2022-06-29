@@ -1,6 +1,4 @@
 from typing import List
-from urllib import response
-from pkg_resources import resource_isdir
 import datetime
 from collections import Counter
 import pytest
@@ -9,7 +7,6 @@ from httpx import AsyncClient
 from fastapi import FastAPI, status
 
 from app.models.cleaning import CleaningInDB
-from tests.conftest import test_list_of_cleanings_with_evaluated_offer
 
 pytestmark = pytest.mark.asyncio
 
