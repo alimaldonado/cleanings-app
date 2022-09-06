@@ -1,6 +1,6 @@
 # app
 fastapi==0.79.0
-uvicorn==0.18.2
+uvicorn==0.18.3
 pydantic==1.9.2
 email-validator==1.2.1
 python-multipart==0.0.5
