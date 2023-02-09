@@ -11,7 +11,7 @@ SQLAlchemy==1.4.46
 alembic==1.9.3
 psycopg2-binary==2.9.5
 # auth
-pyjwt==2.5.0
+pyjwt==2.6.0
 passlib[bcrypt]==1.7.4
 
 # dev
