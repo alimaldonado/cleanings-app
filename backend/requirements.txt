@@ -7,7 +7,7 @@ python-multipart==0.0.5
 
 # db
 databases[postgresql]==0.7.0
-SQLAlchemy==1.4.46
+SQLAlchemy==2.0.9
 alembic==1.9.3
 psycopg2-binary==2.9.5
 # auth
